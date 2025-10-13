@@ -1,0 +1,50 @@
+@1 = ~All kit combinations~
+@2 = ~Choose manually~
+
+@10 = ~Multiclass kits for Fighter/Mage~
+@20 = ~Multiclass kits for Fighter/Cleric~
+@30 = ~Multiclass kits for Fighter/Thief~
+@40 = ~Multiclass kits for Fighter/Mage/Thief~
+@50 = ~Multiclass kits for Mage/Thief~
+@60 = ~Multiclass kits for Cleric/Mage~
+@70 = ~Multiclass kits for Cleric/Thief~
+@80 = ~Multiclass kits for Fighter/Druid~
+@90 = ~Multiclass kits for Fighter/Mage/Cleric~
+@100 = ~Multiclass kits for Cleric/Ranger~
+
+@1000 = ~Enhanced Edition game required.~
+@1001 = ~DLC Merger is required before mods can be installed on this game. Check the readme for more information and a link to download DLC Merger.~
+
+// Interactive class selection
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@2000 = ~WARNING: Invalid class identifier specified: <class>~
+@2001 = ~Could not find any classes matching the given parameters.~
+@2002 = ~Gathering kit information. This may take a while...~
+@2003 = ~Available kits for <class_title>:~
+@2004 = ~Please enter number of the kit to select (leave blank to proceed with the installation):~
+@2005 = ~Specified kit number is not available. Please enter a number between <kit_index_first> and <kit_index_last> to select a kit, or leave input blank to proceed with the installation.~
+@2006 = ~<option>) <kit_selected><kit_title>~
+@2007 = ~<option>) <kit_selected><new_kit_title> (Original title: <kit_title>)~
+@2008 = ~selected~
+@2009 = ~Number of kits to install: <num_selected>~
+@2010 = ~Proceeed with the installation ([Y]es, [N]o, [C]ancel)?~
+@2011 = ~Please enter Y to install the selected kits, N to return to the selection screen, or C to cancel the whole operation.~
+@2012 = ~No kits were selected. Cancel the installation ([Y]es, [N]o)?~
+@2013 = ~Please enter Y to cancel the whole operation, or N to return to the selection screen.~
+@2014 = ~Unselect kit "<kit_title>" ([Y]es, [N]o)?~
+@2015 = ~Please enter Y to unselect the current kit, or N to keep the current kit selected.~
+@2016 = ~Current multiclass kit title: <kit_title>~
+@2017 = ~Please enter a new title for the selected kit (leave blank to keep current):~
+@2018 = ~Accept kit title "<new_kit_title>" ([A]ccept, [R]etry, [C]ancel)?~
+@2019 = ~Please enter A to accept, R to retry, or C to keep the original title.~
+@2020 = ~Non-ASCII characters are not allowed.~
+
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@3000 = ~Installing <num_kits> kits for class <class_title>...~
+@3001 = ~Kit installed successfully: <kit_title>~
+@3002 = ~WARNING: Could not install kit: <kit_title>~
+@3003 = ~Successfully installed <kit_count> kits for class <class_title>.~
+@3004 = ~No kits available for class <class_title>.~
+@3005 = ~WARNING: No kits available for the specified multiclass.~
+@3006 = ~Class is not supported: <class_label>~
+@3007 = ~Kit installation aborted.~

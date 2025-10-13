@@ -1,0 +1,364 @@
+BACKUP ~weidu_external/backup/A7-MultiKits~
+AUTHOR ~Argent77~
+VERSION ~0.9-wip~
+
+ALWAYS
+  // root folder for mutable data
+  OUTER_TEXT_SPRINT WORK_FOLDER ~weidu_external~
+
+  ACTION_IF ((FILE_EXISTS ~dlc/sod-dlc.zip~) OR (FILE_EXISTS ~sod-dlc.zip~)) THEN BEGIN
+    FAIL @1001  // DLC Merger is required before mods can be installed on this game. Check the readme for more information and a link to download DLC Merger.
+  END
+
+  INCLUDE ~%MOD_FOLDER%/lib/multikits.tph~
+END
+
+ASK_EVERY_COMPONENT
+
+README ~A7-MultiKits/doc/readme-%LANGUAGE%.txt~ ~A7-MultiKits/doc/readme.txt~
+
+LANGUAGE ~English~
+         ~english~
+         ~A7-MultiKits/tra/english/setup.tra~
+LANGUAGE ~Deutsch~
+         ~german~
+         ~A7-MultiKits/tra/english/setup.tra~
+         ~A7-MultiKits/tra/german/setup.tra~
+
+
+//////////////////////////////////////
+// Multiclass kits for Fighter/Mage //
+//////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @10  // Multiclass kits for Fighter/Mage
+DESIGNATED 10
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE~) END
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @10  // Multiclass kits for Fighter/Mage
+DESIGNATED 11
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE~) END
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @10  // Multiclass kits for Fighter/Mage
+DESIGNATED 12
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE~) END
+*/
+
+
+////////////////////////////////////////
+// Multiclass kits for Fighter/Cleric //
+////////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @20  // Multiclass kits for Fighter/Cleric
+DESIGNATED 20
+LABEL ~A7-MULTIKITS-FIGHTER_CLERIC-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_CLERIC~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @20  // Multiclass kits for Fighter/Cleric
+DESIGNATED 21
+LABEL ~A7-MULTIKITS-FIGHTER_CLERIC-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_CLERIC~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @20  // Multiclass kits for Fighter/Cleric
+DESIGNATED 22
+LABEL ~A7-MULTIKITS-FIGHTER_CLERIC-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_CLERIC~) END
+*/
+
+
+///////////////////////////////////////
+// Multiclass kits for Fighter/Thief //
+///////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @30  // Multiclass kits for Fighter/Thief
+DESIGNATED 30
+LABEL ~A7-MULTIKITS-FIGHTER_THIEF-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_THIEF~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @30  // Multiclass kits for Fighter/Thief
+DESIGNATED 31
+LABEL ~A7-MULTIKITS-FIGHTER_THIEF-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_THIEF~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @30  // Multiclass kits for Fighter/Thief
+DESIGNATED 32
+LABEL ~A7-MULTIKITS-FIGHTER_THIEF-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_THIEF~) END
+*/
+
+
+////////////////////////////////////////////
+// Multiclass kits for Fighter/Mage/Thief //
+////////////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @40  // Multiclass kits for Fighter/Mage/Thief
+DESIGNATED 40
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE_THIEF-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE_THIEF~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @40  // Multiclass kits for Fighter/Mage/Thief
+DESIGNATED 41
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE_THIEF-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE_THIEF~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @40  // Multiclass kits for Fighter/Mage/Thief
+DESIGNATED 42
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE_THIEF-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE_THIEF~) END
+*/
+
+
+////////////////////////////////////
+// Multiclass kits for Mage/Thief //
+////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @50  // Multiclass kits for Mage/Thief
+DESIGNATED 50
+LABEL ~A7-MULTIKITS-MAGE_THIEF-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~MAGE_THIEF~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @50  // Multiclass kits for Mage/Thief
+DESIGNATED 51
+LABEL ~A7-MULTIKITS-MAGE_THIEF-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~MAGE_THIEF~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @50  // Multiclass kits for Mage/Thief
+DESIGNATED 52
+LABEL ~A7-MULTIKITS-MAGE_THIEF-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~MAGE_THIEF~) END
+*/
+
+
+/////////////////////////////////////
+// Multiclass kits for Cleric/Mage //
+/////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @60  // Multiclass kits for Cleric/Mage
+DESIGNATED 60
+LABEL ~A7-MULTIKITS-CLERIC_MAGE-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_MAGE~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @60  // Multiclass kits for Cleric/Mage
+DESIGNATED 61
+LABEL ~A7-MULTIKITS-CLERIC_MAGE-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_MAGE~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @60  // Multiclass kits for Cleric/Mage
+DESIGNATED 62
+LABEL ~A7-MULTIKITS-CLERIC_MAGE-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_MAGE~) END
+*/
+
+
+//////////////////////////////////////
+// Multiclass kits for Cleric/Thief //
+//////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @70  // Multiclass kits for Cleric/Thief
+DESIGNATED 70
+LABEL ~A7-MULTIKITS-CLERIC_THIEF-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_THIEF~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @70  // Multiclass kits for Cleric/Thief
+DESIGNATED 71
+LABEL ~A7-MULTIKITS-CLERIC_THIEF-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_THIEF~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @70  // Multiclass kits for Cleric/Thief
+DESIGNATED 72
+LABEL ~A7-MULTIKITS-CLERIC_THIEF-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_THIEF~) END
+*/
+
+
+///////////////////////////////////////
+// Multiclass kits for Fighter/Druid //
+///////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @80  // Multiclass kits for Fighter/Druid
+DESIGNATED 80
+LABEL ~A7-MULTIKITS-FIGHTER_DRUID-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_DRUID~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @80  // Multiclass kits for Fighter/Druid
+DESIGNATED 81
+LABEL ~A7-MULTIKITS-FIGHTER_DRUID-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_DRUID~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @80  // Multiclass kits for Fighter/Druid
+DESIGNATED 82
+LABEL ~A7-MULTIKITS-FIGHTER_DRUID-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_DRUID~) END
+*/
+
+
+/////////////////////////////////////////////
+// Multiclass kits for Fighter/Mage/Cleric //
+/////////////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @90  // Multiclass kits for Fighter/Mage/Cleric
+DESIGNATED 90
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE_CLERIC-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE_CLERIC~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @90  // Multiclass kits for Fighter/Mage/Cleric
+DESIGNATED 91
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE_CLERIC-CUSTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE_CLERIC~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @90  // Multiclass kits for Fighter/Mage/Cleric
+DESIGNATED 92
+LABEL ~A7-MULTIKITS-FIGHTER_MAGE_CLERIC-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~FIGHTER_MAGE_CLERIC~) END
+*/
+
+
+///////////////////////////////////////
+// Multiclass kits for Cleric/Ranger //
+///////////////////////////////////////
+
+BEGIN @1  // All kit combinations
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @100 // Multiclass kits for Cleric/Ranger
+DESIGNATED 100
+LABEL ~A7-MULTIKITS-CLERIC_RANGER-ALL~
+
+LAF a7#install_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_RANGER~) END
+
+
+BEGIN @2  // Choose manually
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @100 // Multiclass kits for Cleric/Ranger
+DESIGNATED 101
+LABEL ~A7-MULTIKITS-CLERIC_RANGER-CUTOM~
+
+LAF a7#install_multikits_interactive INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_RANGER~) END
+
+
+/*
+BEGIN ~List kits only~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~) @1000  // Enhanced Edition game required.
+SUBCOMPONENT @100 // Multiclass kits for Cleric/Ranger
+DESIGNATED 102
+LABEL ~A7-MULTIKITS-CLERIC_RANGER-LIST~
+NO_LOG_RECORD
+
+LAF a7#list_multikits INT_VAR class = IDS_OF_SYMBOL(~class~ ~CLERIC_RANGER~) END
+*/

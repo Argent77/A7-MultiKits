@@ -1,0 +1,271 @@
+INCLUDE ~%MOD_FOLDER%/lib/custom_class_interactive.tph~
+
+// Function Overview:
+// a7#list_multikits                  Diagnostic function that lists available kit combinations for the specified multiclass.
+// a7#install_multikits               Installs all available kit combinations for the specified multiclass.
+// a7#install_multikits_interactive   Installs kit combinations for the specified multiclass based on user input.
+// a7#resolve_string                  Performs variable replacements in the given string.
+
+
+/** Diagnostic function that lists available kit combinations for the specified multiclass. */
+DEFINE_ACTION_FUNCTION a7#list_multikits
+INT_VAR
+  class = 0
+BEGIN
+  OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT class_label ~class~ class END
+  ACTION_MATCH class WITH
+    7 8 9 10 13 14 15 16 17 18 BEGIN  // all available multi-classes
+      ACTION_DEFINE_ARRAY class_whitelist BEGIN ~%class_label%~ END
+      LAF a7#collect_class_info
+        INT_VAR
+          allow_kits = 1
+          allow_multi = 1
+          allow_multi_kits = 1
+          allow_custom_multi_kits = 1
+          include_trueclass = 0
+        STR_VAR
+          class_whitelist_name = ~class_whitelist~
+        RET
+          class_map
+        RET_ARRAY
+          class_map
+      END
+
+      PRINT ~Classes found: %class_map%~
+      OUTER_FOR (cls_idx = 0; cls_idx < class_map; ++cls_idx) BEGIN
+        OUTER_SPRINT class_label $class_map(~%cls_idx%~ ~symbol~)
+        OUTER_SPRINT class_title $class_map(~%cls_idx%~ ~title~)
+        PRINT ~Class #%cls_idx%: label=%class_label%, title=%class_title%~
+        OUTER_SET num_kits = $class_map(~%cls_idx%~ ~kit~)
+        PRINT ~Kits found: %num_kits%~
+        OUTER_FOR (kit_idx = 0; kit_idx < num_kits; ++kit_idx) BEGIN
+          OUTER_SET kit_id = $class_map(~%cls_idx%~ ~kit~ ~%kit_idx%~)
+          ACTION_IF (kit_id == "-1") BEGIN
+            OUTER_SPRINT kit_label $class_map(~%cls_idx%~ ~kit~ ~%kit_idx%~ ~symbol~)
+            OUTER_SPRINT kit_title $class_map(~%cls_idx%~ ~kit~ ~%kit_idx%~ ~title~)
+            OUTER_SET kit_id1 = $class_map(~%cls_idx%~ ~kit~ ~%kit_idx%~ ~kit1~)
+            OUTER_SET kit_id2 = $class_map(~%cls_idx%~ ~kit~ ~%kit_idx%~ ~kit2~)
+            OUTER_SET kit_id3 = $class_map(~%cls_idx%~ ~kit~ ~%kit_idx%~ ~kit3~)
+            PRINT ~Kit #%kit_idx%: label=%kit_label%, title=%kit_title%, kit1=%kit_id1%, kit2=%kit_id2%, kit3=%kit_id3%~
+          END ELSE BEGIN
+            PRINT ~Skipping trueclass kit...~
+          END
+        END
+      END
+    END
+    DEFAULT
+      OUTER_SPRINT string @3006 // Class is not supported: <class_label>
+      LAF a7#resolve_string STR_VAR string RET msg = string END
+      FAIL ~%msg%~
+  END
+END
+
+
+/**
+ * Installs all available kit combinations for the specified multiclass.
+ *
+ * INT_VAR class    Numeric multiclass identifier (CLASS.IDS).
+ */
+DEFINE_ACTION_FUNCTION a7#install_multikits
+INT_VAR
+  class = 0
+BEGIN
+  OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT class_label ~class~ class END
+  ACTION_MATCH class WITH
+    7 8 9 10 13 14 15 16 17 18 BEGIN  // all available multi-classes
+      ACTION_DEFINE_ARRAY class_whitelist BEGIN ~%class_label%~ END
+      LAF a7#collect_class_info
+        INT_VAR
+          allow_kits = 1
+          allow_multi = 1
+          allow_multi_kits = 1
+          allow_custom_multi_kits = 1
+          include_trueclass = 0
+        STR_VAR
+          class_whitelist_name = ~class_whitelist~
+        RET
+          class_map
+        RET_ARRAY
+          class_map
+      END
+
+      ACTION_IF (class_map == 1) BEGIN
+        OUTER_SET num_kits = $class_map(~0~ ~kit~)
+        OUTER_SPRINT class_title $class_map(~0~ ~title~)
+        ACTION_IF (num_kits > 0) BEGIN
+          ACTION_IF (NOT IS_SILENT) BEGIN
+            OUTER_SPRINT string @3000 // Installing <num_kits> kits for class <class_title>...
+            LAF a7#resolve_string STR_VAR string RET msg = string END
+            PRINT ~%msg%~
+          END
+
+          OUTER_SET kit_count = 0
+          OUTER_FOR (kit_idx = 0; kit_idx < num_kits; ++kit_idx) BEGIN
+            OUTER_SET kit = $class_map(~0~ ~kit~ ~%kit_idx%~)
+            ACTION_IF (kit == "-1") BEGIN
+              // creating multiclass kit
+              OUTER_SPRINT kit_name $class_map(~0~ ~kit~ ~%kit_idx%~ ~symbol~)
+              OUTER_SPRINT kit_title $class_map(~0~ ~kit~ ~%kit_idx%~ ~title~)
+              OUTER_SET mixed = RESOLVE_STR_REF(~%kit_title%~)
+              OUTER_SET kit1 = $class_map(~0~ ~kit~ ~%kit_idx%~ ~kit1~)
+              OUTER_SET kit2 = $class_map(~0~ ~kit~ ~%kit_idx%~ ~kit2~)
+              OUTER_SET kit3 = $class_map(~0~ ~kit~ ~%kit_idx%~ ~kit3~)
+              LAF a7#create_multikit
+                INT_VAR
+                  class kit1 kit2 kit3 mixed
+                  visible = 1
+                  suppress_warnings = 1 // needed for some class/kit combinations because of non-standard CLAB resrefs
+                STR_VAR
+                  kit_name
+                RET
+                  kit_id
+              END
+
+              ACTION_IF (kit_id != "-1") BEGIN
+                OUTER_SET kit_count += 1
+                ACTION_IF (NOT IS_SILENT) BEGIN
+                  OUTER_SPRINT string @3001 // Kit installed successfully: <kit_title>
+                  LAF a7#resolve_string STR_VAR string RET msg = string END
+                  PRINT ~%msg%~
+                END
+              END ELSE BEGIN
+                OUTER_SPRINT string @3002 // WARNING: Could not install kit: <kit_title>
+                LAF a7#resolve_string STR_VAR string RET msg = string END
+                WARN ~%msg%~
+              END
+            END
+          END
+          OUTER_SPRINT string @3003 // Successfully installed <kit_count> kits for class <class_title>.
+          LAF a7#resolve_string STR_VAR string RET msg = string END
+          PRINT ~%msg%~
+        END ELSE BEGIN
+          OUTER_SPRINT string @3004 // No kits available for class <class_title>.
+          LAF a7#resolve_string STR_VAR string RET msg = string END
+          ABORT ~%msg%~
+        END
+      END ELSE BEGIN
+        WARN @3005  // WARNING: No kits available for the specified multiclass.
+      END
+    END
+    DEFAULT
+      OUTER_SPRINT string @3006 // Class is not supported: <class_label>
+      LAF a7#resolve_string STR_VAR string RET msg = string END
+      FAIL ~%msg%~
+  END
+END
+
+
+/**
+ * Installs kit combinations for the specified multiclass based on user input.
+ *
+ * INT_VAR class                Numeric multiclass identifier (CLASS.IDS).
+ * INT_VAR choose_custom_title  Specifies whether the operation should ask the user for a custom title if a non-existing
+ *                              multiclass kit has been selected. (Default: 1)
+ */
+DEFINE_ACTION_FUNCTION a7#install_multikits_interactive
+INT_VAR
+  class = 0
+  choose_custom_title = 1
+BEGIN
+  OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT class_label ~class~ class END
+  ACTION_MATCH class WITH
+    7 8 9 10 13 14 15 16 17 18 BEGIN  // all available multi-classes
+      LAF a7#interactive_kit_selection
+        INT_VAR class choose_custom_title
+        RET success
+        RET_ARRAY class_map_selected
+      END
+
+      ACTION_IF (success == 1) BEGIN
+        // perform kit installation
+        OUTER_SPRINT class_title $class_map_selected(~0~ ~title~)
+        OUTER_SET num_kits = $class_map_selected(~0~ ~kit~)
+        ACTION_IF (NOT IS_SILENT) BEGIN
+          OUTER_SPRINT string @3000 // Installing <num_kits> kits for class <class_title>...
+          LAF a7#resolve_string STR_VAR string RET msg = string END
+          PRINT ~%msg%~
+        END
+
+        OUTER_SET kit_count = 0
+        OUTER_FOR (kit_idx = 0; kit_idx < num_kits; ++kit_idx) BEGIN
+          // creating multiclass kit
+          OUTER_SPRINT kit_name $class_map_selected(~0~ ~kit~ ~%kit_idx%~ ~symbol~)
+          OUTER_SPRINT kit_title $class_map_selected(~0~ ~kit~ ~%kit_idx%~ ~title~)
+          OUTER_SET mixed = RESOLVE_STR_REF(~%kit_title%~)
+          OUTER_SET kit1 = $class_map_selected(~0~ ~kit~ ~%kit_idx%~ ~kit1~)
+          OUTER_SET kit2 = $class_map_selected(~0~ ~kit~ ~%kit_idx%~ ~kit2~)
+          OUTER_SET kit3 = $class_map_selected(~0~ ~kit~ ~%kit_idx%~ ~kit3~)
+          LAF a7#create_multikit
+            INT_VAR
+              class kit1 kit2 kit3 mixed
+              visible = 1
+              suppress_warnings = 1 // needed for some class/kit combinations because of non-standard CLAB resrefs
+            STR_VAR
+              kit_name
+            RET
+              kit_id
+          END
+
+          ACTION_IF (kit_id != "-1") BEGIN
+            OUTER_SET kit_count += 1
+            ACTION_IF (NOT IS_SILENT) BEGIN
+              OUTER_SPRINT string @3001 // Kit installed successfully: <kit_title>
+              LAF a7#resolve_string STR_VAR string RET msg = string END
+              PRINT ~%msg%~
+            END
+          END ELSE BEGIN
+            OUTER_SPRINT string @3002 // WARNING: Could not install kit: <kit_title>
+            LAF a7#resolve_string STR_VAR string RET msg = string END
+            WARN ~%msg%~
+          END
+        END
+
+        ACTION_IF (kit_count > 0) BEGIN
+          OUTER_SPRINT string @3003 // Successfully installed <kit_count> kits for class <class_title>.
+          LAF a7#resolve_string STR_VAR string RET msg = string END
+          PRINT ~%msg%~
+        END ELSE BEGIN
+          OUTER_SPRINT string @3004 // No kits available for class <class_title>.
+          LAF a7#resolve_string STR_VAR string RET msg = string END
+          ABORT ~%msg%~
+        END
+      END ELSE ACTION_IF (success == "-1") BEGIN
+        // installation aborted
+        ABORT @3007 // Kit installation aborted.
+      END ELSE BEGIN
+        FAIL ~Kit installation failed.~
+      END
+    END
+    DEFAULT
+      OUTER_SPRINT string @3006 // Class is not supported: <class_label>
+      LAF a7#resolve_string STR_VAR string RET msg = string END
+      FAIL ~%msg%~
+  END
+END
+
+
+/**
+ * Performs variable replacements in the given string.
+ * All well-formed placeholder definitions are replaced by their currently defined variable content.
+ * Format: <place_holder> where "place_holder" may contain any characters of [0-9A-Za-z_].
+ * Literal tokens should escape angle brackets with a backslash character.
+ *
+ * STR_VAR string   String with placeholders.
+ * RET string       The resolved string. No change if the input string doesn't contain placeholders.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#resolve_string
+STR_VAR
+  string = ~~
+RET
+  string
+BEGIN
+  OUTER_SPRINT percent ~%~
+  OUTER_PATCH_SAVE string ~%string%~ BEGIN
+    REPLACE_TEXTUALLY ~\(^\|[^\\]\)<\([0-9A-Za-z_]+\)>~ ~\1%percent%\2%percent%~
+    // second pass needed to catch overlapping matches
+    REPLACE_TEXTUALLY ~\([^\\]\)<\([0-9A-Za-z_]+\)>~ ~\1%percent%\2%percent%~
+    // normalize escaped token expressions
+    REPLACE_TEXTUALLY ~\\\(<[0-9A-Za-z_]+>\)~ ~\1~
+    EVAL
+  END
+END

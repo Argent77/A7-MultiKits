@@ -1,0 +1,74 @@
+<<<<<<<< .../inlined/debugging.txt
+>>>>>>>>
+
+/** Registers a function call. "func" specifies the function name. */
+DEFINE_DIMORPHIC_FUNCTION a7#debug
+STR_VAR func = ~~
+BEGIN
+  OUTER_SET modified = 0
+  ACTION_IF (NOT ~%func%~ STR_EQ ~~) BEGIN
+    SILENT
+    COPY - ~.../inlined/debugging.txt~ ~.../inlined/debugging.txt~
+      REPLACE_EVALUATE ~^\("%func%"\)[ %TAB%]+\([0-9]+\)~ BEGIN
+        SET modified = 1
+        SET MATCH2 += 1
+      END ~%MATCH1% %MATCH2%~
+    BUT_ONLY
+
+    ACTION_IF (NOT modified) BEGIN
+      APPEND_OUTER - ~.../inlined/debugging.txt~ ~"%func%" 1~
+    END
+    VERBOSE
+  END
+END
+
+/**
+ * Returns a map of functions and the number of calls.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#debug_score
+RET_ARRAY scores
+BEGIN
+  SILENT
+  COPY - ~.../inlined/debugging.txt~ ~.../inlined/debugging.txt~
+    REPLACE_EVALUATE ~^"\([^"]+\)"[ %TAB%]+\([0-9]+\)~ BEGIN
+      SET $scores(~%MATCH1%~) = MATCH2
+    END ~%MATCH0%~
+  BUT_ONLY
+  VERBOSE
+END
+
+
+/**
+ * Produces a summary of the logged functions calls and prints it to the log or standard output.
+ *
+ * INT_VAR log_only       Whether to print the log output only to the log file. (Default: 1)
+ * STR_VAR title          Title of the statistics. (Default: "Statistics:")
+ * STR_VAR scores_array   Name of the statistics array. Leave empty to generate it automatically. (Default: empty)
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#debug_output
+INT_VAR
+  log_only = 1
+STR_VAR
+  title = ~~
+  scores_array = ~~
+BEGIN
+  ACTION_IF (~%scores_array%~ STR_EQ ~~) BEGIN
+    LAF a7#debug_score RET_ARRAY scores END
+    OUTER_SPRINT scores_array ~scores~
+  END
+
+  ACTION_IF (~%title%~ STR_EQ ~~) BEGIN
+    OUTER_SPRINT title ~Statistics:~
+  END
+
+  OUTER_SPRINT output ~%title%~
+  ACTION_PHP_EACH ~%scores_array%~ AS name => count BEGIN
+    OUTER_SPRINT output ~%output%%LNL%%count%  "%name%"~
+  END
+
+  ACTION_IF (log_only) BEGIN
+    LOG ~%output%~
+  END ELSE BEGIN
+    PRINT ~%output%~
+  END
+END

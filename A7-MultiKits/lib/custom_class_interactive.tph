@@ -1,0 +1,1088 @@
+INCLUDE ~%MOD_FOLDER%/lib/kit_functions.tph~
+INCLUDE ~%MOD_FOLDER%/lib/custom_class.tph~
+
+// Function Overview:
+// a7#interactive_kit_selection       Main function: Provides an interactive kit selection menu for the user.
+// a7#select_kit_interactive          Handles the kit selection screen for the interactive kit selection.
+// a7#select_kit_title_interactive    Handles customization of multiclass kit names for the interactive class/kit selection.
+// a7#generate_kit_menu               Generates a string of kits to select from.
+// a7#confirm_kit_installation        Handles termination of the current kit selection screen.
+// a7#handle_kit_unselect             Handles unselection of a selected kit entry.
+// a7#handle_kit_select               Handles selection of an unselected kit entry.
+// a7#resolve_tra_reference           Resolves a potential tra reference.
+// a7#resolve_string                  Performs variable replacements in the given string.
+// a7#evaluate_input                  Checks the given input for invalid characters.
+// a7#is_ascii                        Checks if the given input string is encoded purely in ASCII.
+// a7#text_convert_windows            Performs iconv conversion to UTF-8 character encoding on the given input string on Windows platforms.
+// a7#text_convert_unix               Performs iconv conversion to UTF-8 character encoding on the given input string on Linux and macOS platforms.
+// a7#trim                            Removes whitespace before and/or after the given string.
+
+
+// Constants for available selection screen result states
+OUTER_SET STATE_PENDING = "-1"  // Meta state: set while interactive selection screen is still active
+OUTER_SET STATE_CANCEL = 0      // Class selection has been canceled by the user
+OUTER_SET STATE_ACCEPT = 1      // Accept current class/kit choices
+
+// general-purpose blank file template
+<<<<<<<< .../inlined/custom_class_interactive/blank
+>>>>>>>>
+
+/**
+ * Provides an interactive selection menu for the user to select one or more kits of a specific class.
+ *
+ * INT_VAR class                    Numeric multiclass identifier (CLASS.IDS) to provide a list of kits for.
+ * INT_VAR choose_custom_title      Specifies whether the operation should ask the user for a custom title if a non-existing
+ *                                  multiclass kit has been selected. (Default: 1)
+ * STR_VAR iconv_path               Optional path to an iconv binary for Windows. This binary may be used to ensure a custom
+ *                                  multiclass kit title with non-ASCII characters is correctly encoded. It is only relevant
+ *                                  if parameter "choose_custom_title" is non-zero. (Default: %MOD_FOLDER%/tools/iconv/iconv.exe)
+ * STR_VAR prompt_xxx, ...          Various strings for prompting user input. Tra references are supported (by putting them inside quotes).
+ * STR_VAR msg_xxx, ...             Various message strings. Tra references are supported (by putting them inside quotes).
+ * RET success                      Returns 1 if the user selected one or more kits, -1 if the user cancelled the procedure,
+ *                                  or 0 if the function failed for other reasons.
+ * RET_ARRAY class_map_selected     Map containing detailed information about the selected kit definitions of the class specified
+ *                                  by the "class" parameter. Only available if "success" returns 1.
+ * "class_map_selected" structure:
+ * class_map_selected => # class entries (always 1)
+ * $class_map_selected(<cls_idx>) => class id
+ * $class_map_selected(<cls_idx> ~symbol~) => symbolic class name
+ * $class_map_selected(<cls_idx> ~title~) => class title for display
+ * $class_map_selected(<cls_idx> ~kit~) => number of defined kit entries
+ * $class_map_selected(<cls_idx> ~kit~ <kit_idx>) => the kit id (always -1)
+ * $class_map_selected(<cls_idx> ~kit~ <kit_idx> ~symbol~) => symbolic kit name
+ * $class_map_selected(<cls_idx> ~kit~ <kit_idx> ~title~) => (auto-generated or user-defined) kit title
+ * $class_map_selected(<cls_idx> ~kit~ <kit_idx> ~kit1~) => kit id of the first multiclass aspect
+ * $class_map_selected(<cls_idx> ~kit~ <kit_idx> ~kit2~) => kit id of the second multiclass aspect, or -1 for trueclass
+ * $class_map_selected(<cls_idx> ~kit~ <kit_idx> ~kit3~) => kit id of the third multiclass aspect, or -1 for trueclass
+ */
+DEFINE_ACTION_FUNCTION a7#interactive_kit_selection
+INT_VAR
+  class = 0
+  choose_custom_title = 1
+STR_VAR
+  iconv_path = EVAL ~%MOD_FOLDER%/tools/iconv/iconv.exe~
+  // various message strings
+  prompt_enter_kit_option           = ~@2004~ // Please enter number of the kit to select (leave blank to proceed with the installation):
+  prompt_install_kits_proceed       = ~@2010~ // Proceeed with the installation ([Y]es, [N]o, [C]ancel)?
+  prompt_cancel_operation_proceed   = ~@2012~ // No kits were selected. Cancel the installation ([Y]es, [N]o)?
+  prompt_unselect_kit               = ~@2014~ // Unselect kit "<kit_title>" ([Y]es, [N]o)?
+  prompt_custom_title               = ~@2017~ // Please enter a new title for the selected kit (leave blank to keep current):
+  prompt_custom_title_confirm       = ~@2018~ // Accept kit title "<new_kit_title>" ([A]ccept, [R]etry, [C]ancel)?
+  msg_warn_invalid_class            = ~@2000~ // WARNING: Invalid class identifier specified: <class>
+  msg_fail_nonexisting_class        = ~@2001~ // Could not find any classes matching the given parameters.
+  msg_gathering_kit_info            = ~@2002~ // Gathering kit information. This may take a while...
+  msg_available_kits                = ~@2003~ // Available kits for <class_title>:
+  msg_enter_kit_option_help         = ~@2005~ // Specified kit number is not available. Please enter a number between <kit_index_first> and <kit_index_last> to select a kit, or leave input blank to proceed with the installation.
+  msg_kitlist_entry                 = ~@2006~ // <option>) <kit_selected><kit_title>
+  msg_kitlist_entry_selected        = ~@2007~ // <option>) <kit_selected><new_kit_title> (formerly <kit_title>)
+  msg_selected                      = ~@2008~ // selected
+  msg_install_kits_count            = ~@2009~ // Number of kits to install: <num_selected>
+  msg_install_kits_proceed_help     = ~@2011~ // Please enter Y to install the selected kits, N to return to the selection screen, or C to cancel the whole operation.
+  msg_cancel_operation_proceed_help = ~@2013~ // Please enter Y to cancel the whole operation, or N to return to the selection screen.
+  msg_unselect_kit_help             = ~@2015~ // Please enter Y to unselect the current kit, or N to keep the current kit selected.
+  msg_current_kit_title             = ~@2016~ // Current multiclass kit title: <kit_title>
+  msg_custom_title_confirm_help     = ~@2019~ // Please enter A to accept, R to retry, or C to keep the original title.
+  msg_custom_title_invalid          = ~@2020~ // Non-ASCII characters are not allowed.
+RET
+  success
+RET_ARRAY
+  class_map_selected
+BEGIN
+  // initializing return values
+  OUTER_SET success = 1
+  OUTER_SET class_map_selected = 0
+
+  // resolving custom prompts and messages
+  ACTION_FOR_EACH string_var IN 
+    ~prompt_enter_kit_option~
+    ~prompt_install_kits_proceed~
+    ~prompt_cancel_operation_proceed~
+    ~prompt_unselect_kit~
+    ~prompt_custom_title~
+    ~prompt_custom_title_confirm~
+    ~msg_warn_invalid_class~
+    ~msg_fail_nonexisting_class~
+    ~msg_gathering_kit_info~
+    ~msg_available_kits~
+    ~msg_enter_kit_option_help~
+    ~msg_kitlist_entry~
+    ~msg_kitlist_entry_selected~
+    ~msg_selected~
+    ~msg_install_kits_count~
+    ~msg_install_kits_proceed_help~
+    ~msg_cancel_operation_proceed_help~
+    ~msg_unselect_kit_help~
+    ~msg_current_kit_title~
+    ~msg_custom_title_confirm_help~
+    ~msg_custom_title_invalid~
+  BEGIN
+    OUTER_SPRINT string EVAL ~%%string_var%%~
+    LAF a7#resolve_tra_reference STR_VAR string RET string END
+    OUTER_SPRINT EVAL ~%string_var%~ ~%string%~
+  END
+
+  // parameter validations
+  ACTION_MATCH class WITH
+    7 8 9 10 13 14 15 16 17 18 BEGIN
+      // check passes for all available multi-classes
+      OUTER_SET success = 1
+    END
+    DEFAULT
+      OUTER_SET success = 0
+      LAF a7#resolve_string STR_VAR string = ~%msg_warn_invalid_class%~ RET msg = string END
+      WARN ~%msg%~  // WARNING: Invalid class identifier specified: <class>
+  END
+
+  ACTION_IF (success) BEGIN
+    OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT class_label ~class~ class END
+    ACTION_DEFINE_ARRAY class_whitelist BEGIN ~%class_label%~ END
+    OUTER_SPRINT class_whitelist_name ~class_whitelist~
+
+    // initializations
+    PRINT ~%msg_gathering_kit_info%~  // Gathering kit information. This may take a while...
+
+    // generating list of availables classes/kits if not provided
+    LAF a7#collect_class_info
+      INT_VAR
+        include_trueclass = 0
+        force_custom_multi_kits = 1
+      STR_VAR
+        class_whitelist_name
+      RET class_map
+      RET_ARRAY class_map
+    END
+    OUTER_SPRINT class_map_name ~class_map~
+
+    ACTION_IF (EVAL ~%class_map_name%~ < 1) BEGIN
+      OUTER_SET success = 0
+      FAIL ~%msg_fail_nonexisting_class%~ // Could not find any classes matching the given parameters.
+    END
+  END
+
+  ACTION_IF (success) BEGIN
+    // invoking interactive selection screens
+    LAF a7#select_kit_interactive
+      INT_VAR
+        choose_custom_title
+      STR_VAR
+        class_map_name
+        iconv_path
+        prompt_enter_kit_option
+        prompt_install_kits_proceed
+        prompt_cancel_operation_proceed
+        prompt_unselect_kit
+        prompt_custom_title
+        prompt_custom_title_confirm
+        msg_available_kits
+        msg_enter_kit_option_help
+        msg_kitlist_entry
+        msg_kitlist_entry_selected
+        msg_selected
+        msg_install_kits_count
+        msg_install_kits_proceed_help
+        msg_cancel_operation_proceed_help
+        msg_unselect_kit_help
+        msg_current_kit_title
+        msg_custom_title_confirm_help
+        msg_custom_title_invalid
+      RET success
+      RET_ARRAY class_map_selected
+    END
+  END
+END
+
+
+/**
+ * Handles kit selection of the interactive class/kit selection menu.
+ *
+ * INT_VAR choose_custom_title    Specifies whether the operation should ask the user for a custom title if a non-existing
+ *                                multiclass kit has been selected. (Default: 1)
+ * STR_VAR class_map_name         Name of the map structure containing information about all compatible classes and kits.
+ * STR_VAR iconv_path             Optional path to an iconv binary for Windows. This binary may be used to ensure a
+ *                                custom multiclass kit title with non-ASCII characters is correctly encoded. (Default: empty)
+ * STR_VAR prompt_xxx, ...        Various strings for prompting user input.
+ * STR_VAR msg_xxx, ...           Various message strings.
+ * RET success                    Returns 1 if the user selected one or more kits, -1 if the user cancelled the procedure,
+ *                                or 0 if the function failed for other reasons.
+ * RET_ARRAY class_map_selected   Map containing detailed information about the selected kit definitions of the class specified
+ *                                by the "class" parameter. Only available if "success" returns 1.
+ */
+DEFINE_ACTION_FUNCTION a7#select_kit_interactive
+INT_VAR
+  choose_custom_title = 1
+STR_VAR
+  class_map_name = ~class_map~
+  iconv_path = ~~
+  // various message strings
+  prompt_enter_kit_option = ~~
+  prompt_install_kits_proceed = ~~
+  prompt_cancel_operation_proceed = ~~
+  prompt_unselect_kit = ~~
+  prompt_custom_title = ~~
+  prompt_custom_title_confirm = ~~
+  msg_available_kits = ~~
+  msg_enter_kit_option_help = ~~
+  msg_kitlist_entry = ~~
+  msg_kitlist_entry_selected = ~~
+  msg_selected = ~~
+  msg_install_kits_count = ~~
+  msg_install_kits_proceed_help = ~~
+  msg_cancel_operation_proceed_help = ~~
+  msg_unselect_kit_help = ~~
+  msg_current_kit_title = ~~
+  msg_custom_title_confirm_help = ~~
+  msg_custom_title_invalid = ~~
+RET
+  success
+RET_ARRAY
+  class_map_selected
+BEGIN
+  // initializing return values
+  OUTER_SET success = 0
+  OUTER_SET class_map_selected = 0
+
+  ACTION_IF (NOT ~%class_map_name%~ STR_EQ ~~ && EVAL ~%class_map_name%~ > 0) BEGIN
+    // line breaks are OS-specific
+    ACTION_IF (~%WEIDU_OS%~ STR_EQ ~win32~) BEGIN
+      OUTER_SPRINT nl ~%WNL%~
+    END ELSE BEGIN
+      OUTER_SPRINT nl ~%LNL%~
+    END
+
+    OUTER_SPRINT class_title $EVAL ~%class_map_name%~(~0~ ~title~)
+    OUTER_SET num_kits = $EVAL ~%class_map_name%~(~0~ ~kit~)
+
+    // all kit entries are unselected by default and use the predefined kit title
+    OUTER_FOR (idx = 0; idx < num_kits; ++idx) BEGIN
+      OUTER_SET $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~selected~) = 0
+      OUTER_SPRINT title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~title~)
+      OUTER_SPRINT $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~new_title~) ~%title%~
+    END
+
+    // outer-while handles the whole kit selection procedure
+    OUTER_SET state = STATE_PENDING
+    OUTER_WHILE (state == STATE_PENDING) BEGIN
+      // generating list of available kits
+      LAF a7#generate_kit_menu
+        STR_VAR
+          class_map_name
+          msg_kitlist_entry
+          msg_kitlist_entry_selected
+          msg_selected
+        RET
+          kit_entries = menu
+      END
+
+      // presenting available kit list for current class
+      LAF a7#resolve_string STR_VAR string = EVAL ~%msg_available_kits%~ RET output_kit_list = string END
+      PRINT ~%output_kit_list%%kit_entries%~  // Available kits for <class_title>:
+
+      // handling user input
+      OUTER_SET choose_kit_pending = 1
+      OUTER_WHILE (choose_kit_pending) BEGIN
+        // awaiting kit selection
+        PRINT ~%prompt_enter_kit_option%~ // Please enter number of the kit to select (leave blank to proceed with the installation):
+        ACTION_READLN input
+        LAF a7#trim STR_VAR string = EVAL ~%input%~ RET input = string END
+
+        OUTER_SET selected_index = "-1"
+        ACTION_IF (~%input%~ STR_EQ ~~) BEGIN
+          // user signals end of kit selection
+          LAF a7#confirm_kit_installation
+            STR_VAR
+              class_map_name
+              prompt_install_kits_proceed
+              prompt_cancel_operation_proceed
+              msg_install_kits_count
+              msg_install_kits_proceed_help
+              msg_cancel_operation_proceed_help
+            RET
+              state
+          END
+          OUTER_SET choose_kit_pending = 0
+        END ELSE ACTION_IF (IS_AN_INT ~input~ && input >= 1 && input <= num_kits) BEGIN
+          // user selected a valid kit entry
+          OUTER_SET selected_index = input - 1
+          OUTER_SET choose_kit_pending = 0
+        END ELSE BEGIN
+          // invalid input
+          OUTER_SET kit_index_first = 1
+          OUTER_SET kit_index_last = num_kits
+          LAF a7#resolve_string STR_VAR string = EVAL ~%msg_enter_kit_option_help%~ RET msg = string END
+          PRINT ~%msg%~ // Specified kit number is not available. Please enter a number between <kit_index_first> and <kit_index_last> to select a kit, or leave input blank to proceed with the installation.
+        END
+      END
+
+      ACTION_IF (state == STATE_PENDING && selected_index != "-1") BEGIN
+        // processing selected kit
+        OUTER_SET is_selected = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~selected~)
+        ACTION_IF (is_selected) BEGIN
+          // handle kit unselection
+          LAF a7#handle_kit_unselect
+            INT_VAR
+              selected_index
+            STR_VAR
+              class_map_name
+              prompt_unselect_kit
+              msg_unselect_kit_help
+            RET
+              selected
+          END
+          ACTION_IF (NOT selected) BEGIN
+            // mark as "not selected"
+            OUTER_SET $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~selected~) = 0
+            // and restore original kit title
+            OUTER_SPRINT title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~title~)
+            OUTER_SPRINT $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~new_title~) ~%title%~
+          END
+        END ELSE BEGIN
+          // handle kit selection
+          LAF a7#handle_kit_select
+            INT_VAR
+              selected_index
+            STR_VAR
+              class_map_name
+              iconv_path
+              prompt_custom_title
+              prompt_custom_title
+              prompt_custom_title_confirm
+              msg_current_kit_title
+              msg_custom_title_confirm_help
+              msg_custom_title_invalid
+            RET
+              selected
+              new_title
+          END
+          ACTION_IF (selected) BEGIN
+            // mark as "selected"
+            OUTER_SET $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~selected~) = 1
+            // and assign custom kit title
+            OUTER_SPRINT $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~new_title~) ~%new_title%~
+          END
+        END
+      END
+    END
+
+    ACTION_IF (state == STATE_ACCEPT) BEGIN
+      // kits selected: initializing "class_map_selected" map
+      OUTER_SET class_map_selected = 1
+      OUTER_SET $class_map_selected(~0~) = $EVAL ~%class_map_name%~(~0~)
+      OUTER_SPRINT $class_map_selected(~0~ ~symbol~) $EVAL ~%class_map_name%~(~0~ ~symbol~)
+      OUTER_SPRINT $class_map_selected(~0~ ~title~) $EVAL ~%class_map_name%~(~0~ ~title~)
+      OUTER_SET num_selected_kits = 0
+      OUTER_FOR (idx = 0; idx < num_kits; ++idx) BEGIN
+        OUTER_SET selected = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~selected~)
+        ACTION_IF (selected) BEGIN
+          OUTER_SET $class_map_selected(~0~ ~kit~ ~%num_selected_kits%~) = "-1"
+          OUTER_SPRINT $class_map_selected(~0~ ~kit~ ~%num_selected_kits%~ ~symbol~) $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~symbol~)
+          OUTER_SPRINT $class_map_selected(~0~ ~kit~ ~%num_selected_kits%~ ~title~) $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~new_title~)
+          OUTER_SET $class_map_selected(~0~ ~kit~ ~%num_selected_kits%~ ~kit1~) = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~kit1~)
+          OUTER_SET $class_map_selected(~0~ ~kit~ ~%num_selected_kits%~ ~kit2~) = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~kit2~)
+          OUTER_SET $class_map_selected(~0~ ~kit~ ~%num_selected_kits%~ ~kit3~) = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~kit3~)
+          OUTER_SET num_selected_kits += 1
+        END
+      END
+      OUTER_SET $class_map_selected(~0~ ~kit~) = num_selected_kits
+      OUTER_SET success = num_selected_kits > 0
+    END ELSE ACTION_IF (state == STATE_CANCEL) BEGIN
+      // kit selection terminated
+      OUTER_SET success = "-1"
+    END ELSE BEGIN
+      // should never happen
+      OUTER_SET success = 0
+    END
+  END
+END
+
+
+/**
+ * Handles customization of a multiclass kit title.
+ *
+ * STR_VAR title            Original (auto-generated) title of the multiclass kit.
+ * STR_VAR iconv_path       Optional path to an iconv binary for Windows. This binary may be used to ensure a custom
+ *                          multiclass kit title with non-ASCII characters is correctly encoded. (Default: empty)
+ * STR_VAR prompt_xxx, ...  Various strings for prompting user input.
+ * STR_VAR msg_xxx, ...     Various message strings.
+ * RET title                Returns the customized title of the multiclass kit.
+ */
+DEFINE_ACTION_FUNCTION a7#select_kit_title_interactive
+STR_VAR
+  title = ~~
+  iconv_path = ~~
+  // various message strings
+  prompt_custom_title = ~~
+  prompt_custom_title_confirm = ~~
+  msg_current_kit_title = ~~
+  msg_custom_title_confirm_help = ~~
+  msg_custom_title_invalid = ~~
+RET
+  title
+BEGIN
+  OUTER_SPRINT kit_title ~%title%~
+  LAF a7#resolve_string STR_VAR string = EVAL ~%msg_current_kit_title%~ RET current_title = string END
+
+  OUTER_SET change_title_pending = 1
+  OUTER_WHILE (change_title_pending) BEGIN
+    // displaying original (auto-generated) kit title
+    PRINT ~%current_title%~ // Current multiclass kit title: <kit_title>
+
+    // handling user input
+    PRINT ~%prompt_custom_title%~ // Please enter a new title for the selected kit (leave blank to keep current):
+    ACTION_READLN input
+
+    // input doesn't allow non-ascii characters
+    LAF a7#evaluate_input STR_VAR input iconv_path RET output valid index END
+
+    ACTION_IF (valid) BEGIN
+      LAF a7#trim STR_VAR string = EVAL ~%output%~ RET output = string END
+
+      ACTION_IF (~%output%~ STR_EQ ~~) BEGIN
+        // keep current title
+        OUTER_SPRINT new_kit_title ~%kit_title%~
+      END ELSE BEGIN
+        // assign new title
+        OUTER_SPRINT new_kit_title ~%output%~
+      END
+
+      OUTER_SET confirm_pending = 1
+      OUTER_WHILE (confirm_pending) BEGIN
+        // confirm choice
+        LAF a7#resolve_string STR_VAR string = EVAL ~%prompt_custom_title_confirm%~ RET current_title_confirm = string END
+        PRINT ~%current_title_confirm%~ // Accept kit title "<new_kit_title>" ([A]ccept, [R]etry, [C]ancel)?
+        ACTION_READLN confirm
+        LAF a7#trim STR_VAR string = EVAL ~%confirm%~ RET confirm = string END
+
+        ACTION_IF (~%confirm%~ STR_EQ ~a~) BEGIN
+          // accept title
+          OUTER_SPRINT title ~%new_kit_title%~
+          OUTER_SET change_title_pending = 0
+          OUTER_SET confirm_pending = 0
+        END ELSE ACTION_IF (~%confirm%~ STR_EQ ~r~) BEGIN
+          // repeat input
+          OUTER_SET confirm_pending = 0
+        END ELSE ACTION_IF (~%confirm%~ STR_EQ ~c~) BEGIN
+          // cancel operation
+          OUTER_SPRINT title ~%kit_title%~
+          OUTER_SET change_title_pending = 0
+          OUTER_SET confirm_pending = 0
+        END ELSE BEGIN
+          // invalid input
+          PRINT ~%msg_custom_title_confirm_help%~ // Please enter A to accept, R to retry, or C to keep the original title.
+        END
+      END
+    END ELSE BEGIN
+      // input contains non-ascii characters
+      PRINT ~%msg_custom_title_invalid%~  // Non-ASCII characters are not allowed.
+    END
+  END
+END
+
+
+/**
+ * Generates a string of kits to select from.
+ *
+ * STR_VAR class_map_name   Name of the map structure containing information about all compatible classes and kits.
+ * RET menu                 String containing an indexed list of kits for selection.
+ */
+DEFINE_ACTION_FUNCTION a7#generate_kit_menu
+STR_VAR
+  class_map_name = ~~
+  // various message strings
+  msg_kitlist_entry = ~~
+  msg_kitlist_entry_selected = ~~
+  msg_selected = ~~
+RET
+  menu
+BEGIN
+
+  OUTER_SPRINT menu ~~
+  ACTION_IF (NOT ~%class_map_name%~ STR_EQ ~~ && EVAL ~%class_map_name%~ > 0) BEGIN
+    // line breaks are OS-specific
+    ACTION_IF (~%WEIDU_OS%~ STR_EQ ~win32~) BEGIN
+      OUTER_SPRINT nl ~%WNL%~
+    END ELSE BEGIN
+      OUTER_SPRINT nl ~%LNL%~
+    END
+
+    OUTER_SET num_kits = $EVAL ~%class_map_name%~(~0~ ~kit~)
+    OUTER_FOR (kit_idx = 0; kit_idx < num_kits; ++kit_idx) BEGIN
+      OUTER_SET option = kit_idx + 1
+      OUTER_SPRINT kit_title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%kit_idx%~ ~title~)
+      OUTER_SPRINT new_kit_title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%kit_idx%~ ~new_title~)
+      OUTER_SET selected = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%kit_idx%~ ~selected~)
+      ACTION_IF (selected) BEGIN
+        OUTER_SPRINT kit_selected ~[%msg_selected%] ~ // [selected]
+      END ELSE BEGIN
+        OUTER_SPRINT kit_selected ~~
+      END
+
+      ACTION_IF (~%kit_title%~ STR_EQ ~%new_kit_title%~) BEGIN
+        OUTER_SPRINT entry ~%msg_kitlist_entry%~ // <option>) <kit_selected><kit_title>
+      END ELSE BEGIN
+        OUTER_SPRINT entry ~%msg_kitlist_entry_selected%~  // <option>) <kit_selected><new_kit_title> (formerly <kit_title>)
+      END
+
+      LAF a7#resolve_string STR_VAR string = EVAL ~%entry%~ RET entry = string END
+      OUTER_SPRINT menu ~%menu%%nl% %entry%~
+    END
+  END
+END
+
+
+/**
+ * Handles termination of the current kit selection screen.
+ *
+ * STR_VAR class_map_name   Name of the map structure containing information about all compatible classes and kits.
+ * RET state                State of the (outer) kit selection loop after the confirmation:
+ *                          - STATE_ACCEPT:  proceed with installing selected kits
+ *                          - STATE_CANCEL:  terminate whole kit selection procedure
+ *                          - STATE_PENDING: return to the kit selection screen
+ */
+DEFINE_ACTION_FUNCTION a7#confirm_kit_installation
+STR_VAR
+  class_map_name = ~~
+  // various message strings
+  prompt_install_kits_proceed = ~~
+  prompt_cancel_operation_proceed = ~~
+  msg_install_kits_count = ~~
+  msg_install_kits_proceed_help = ~~
+  msg_cancel_operation_proceed_help = ~~
+RET
+  state
+BEGIN
+  OUTER_SET state = STATE_PENDING   // default state
+
+  ACTION_IF (NOT ~%class_map_name%~ STR_EQ ~~ && EVAL ~%class_map_name%~ > 0) BEGIN
+    // collecting selected kits for presentation
+    OUTER_SET num_selected = 0
+    OUTER_SPRINT selected_entries ~~
+    OUTER_SET num_kits = $EVAL ~%class_map_name%~(~0~ ~kit~)
+    OUTER_FOR (idx = 0; idx < num_kits; ++idx) BEGIN
+      OUTER_SET is_selected = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~selected~)
+      ACTION_IF (is_selected) BEGIN
+        OUTER_SET num_selected += 1
+        OUTER_SPRINT kit_title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%idx%~ ~new_title~)
+        OUTER_SPRINT selected_entries ~%selected_entries%%nl%- %kit_title%~
+      END
+    END
+
+    ACTION_IF (num_selected > 0) BEGIN
+      // prompt for kit installation (Yes, No, Cancel)
+      OUTER_SET confirm_pending = 1
+      OUTER_WHILE (confirm_pending) BEGIN
+        LAF a7#resolve_string STR_VAR string = EVAL ~%msg_install_kits_count%~ RET msg_kits_to_install = string END
+        PRINT ~%msg_kits_to_install%%selected_entries%~ // Number of kits to install: <num_selected>
+        PRINT ~%prompt_install_kits_proceed%~ // Proceeed with the installation ([Y]es, [N]o, [C]ancel)?
+        ACTION_READLN confirm
+        LAF a7#trim STR_VAR string = EVAL ~%confirm%~ RET confirm = string END
+
+        ACTION_IF (~%confirm%~ STR_EQ ~y~) BEGIN
+          // Yes: proceed with installation
+          OUTER_SET confirm_pending = 0
+          OUTER_SET state = STATE_ACCEPT
+        END ELSE ACTION_IF (~%confirm%~ STR_EQ ~n~) BEGIN
+          // No: return to selection screen
+          OUTER_SET confirm_pending = 0
+        END ELSE ACTION_IF (~%confirm%~ STR_EQ ~c~) BEGIN
+          // Cancel: Cancel whole kit installation procedure
+          OUTER_SET confirm_pending = 0
+          OUTER_SET state = STATE_CANCEL
+        END ELSE BEGIN
+          PRINT ~%msg_install_kits_proceed_help%~ // Please enter Y to install the selected kits, N to return to the selection screen, or C to cancel the whole operation.
+        END
+      END
+    END ELSE BEGIN
+      // confirm termination of kit selection (Yes, No)
+      OUTER_SET confirm_pending = 1
+      OUTER_WHILE (confirm_pending) BEGIN
+        PRINT ~%prompt_cancel_operation_proceed%~ // No kits were selected. Cancel the installation ([Y]es, [N]o)?
+        ACTION_READLN confirm
+        LAF a7#trim STR_VAR string = EVAL ~%confirm%~ RET confirm = string END
+
+        ACTION_IF (~%confirm%~ STR_EQ ~y~) BEGIN
+          // Yes: cancel the whole installation procedure
+          OUTER_SET confirm_pending = 0
+          OUTER_SET state = STATE_CANCEL
+        END ELSE ACTION_IF (~%confirm%~ STR_EQ ~n~) BEGIN
+          // No: return to selection screen
+          OUTER_SET confirm_pending = 0
+        END ELSE BEGIN
+          PRINT ~%msg_cancel_operation_proceed_help%~ // Please enter Y to cancel the whole operation, or N to return to the selection screen.
+        END
+      END
+    END
+  END
+END
+
+
+/**
+ * Handles unselection of a selected kit entry.
+ *
+ * INT_VAR selected_index   Kit index in the "class_map_name" array.
+ * STR_VAR class_map_name   Name of the map structure containing information about all compatible classes and kits.
+ * RET selected             Returns whether the kit has been successfully unselected when the function call returns.
+ */
+DEFINE_ACTION_FUNCTION a7#handle_kit_unselect
+INT_VAR
+  selected_index = "-1"
+STR_VAR
+  class_map_name = ~~
+  // various message strings
+  prompt_unselect_kit = ~~
+  msg_unselect_kit_help = ~~
+RET
+  selected
+BEGIN
+  OUTER_SET selected = 1
+  ACTION_IF (selected_index != "-1" && NOT ~%class_map_name%~ STR_EQ ~~ && EVAL ~%class_map_name%~ > 0) BEGIN
+    OUTER_SET num_kits = $EVAL ~%class_map_name%~(~0~ ~kit~)
+    ACTION_IF (selected_index >= 0 && selected_index < num_kits) BEGIN
+      OUTER_SET selected = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~selected~)
+      ACTION_IF (selected) BEGIN
+        OUTER_SPRINT kit_title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~new_title~)
+
+        OUTER_SET confirm_pending = 1
+        OUTER_WHILE (confirm_pending) BEGIN
+          LAF a7#resolve_string STR_VAR string = EVAL ~%prompt_unselect_kit%~ RET prompt_unselect = string END
+          PRINT ~%prompt_unselect%~ // Unselect kit "<kit_title>" ([Y]es, [N]o)?
+          ACTION_READLN input
+          LAF a7#trim STR_VAR string = EVAL ~%input%~ RET input = string END
+
+          ACTION_IF (~%input%~ STR_EQ ~y~) BEGIN
+            // Yes: unselect kit
+            OUTER_SET selected = 0
+            OUTER_SET confirm_pending = 0
+          END ELSE ACTION_IF (~%input%~ STR_EQ ~n~) BEGIN
+            // No: retain kit selection
+            OUTER_SET confirm_pending = 0
+          END ELSE BEGIN
+            PRINT ~%msg_unselect_kit_help%~ // Please enter Y to unselect the current kit, or N to keep the current kit selected.
+          END
+        END
+      END
+    END
+  END
+END
+
+
+/**
+ * Handles selection of an unselected kit entry.
+ *
+ * INT_VAR selected_index       Kit index in the "class_map_name" array.
+ * INT_VAR choose_custom_title  Specifies whether the operation should ask the user for a custom title if a non-existing.
+ * STR_VAR class_map_name       Name of the map structure containing information about all compatible classes and kits.
+ * STR_VAR iconv_path           Path to an iconv binary for Windows.
+ * RET selected                 Returns whether the kit has been successfully selected when the function call returns.
+ */
+DEFINE_ACTION_FUNCTION a7#handle_kit_select
+INT_VAR
+  selected_index = "-1"
+  choose_custom_title = 1
+STR_VAR
+  class_map_name = ~~
+  iconv_path = ~~
+  // various message strings
+  prompt_custom_title = ~~
+  prompt_custom_title_confirm = ~~
+  msg_current_kit_title = ~~
+  msg_custom_title_confirm_help = ~~
+  msg_custom_title_invalid = ~~
+RET
+  selected
+  new_title
+BEGIN
+  OUTER_SET selected = 0
+  OUTER_SPRINT new_title ~~
+  ACTION_IF (selected_index != "-1" && NOT ~%class_map_name%~ STR_EQ ~~ && EVAL ~%class_map_name%~ > 0) BEGIN
+    OUTER_SET num_kits = $EVAL ~%class_map_name%~(~0~ ~kit~)
+    ACTION_IF (selected_index >= 0 && selected_index < num_kits) BEGIN
+      OUTER_SET selected = $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~selected~)
+      OUTER_SPRINT new_title $EVAL ~%class_map_name%~(~0~ ~kit~ ~%selected_index%~ ~new_title~)
+      ACTION_IF (NOT selected) BEGIN
+        OUTER_SET selected = 1
+        ACTION_IF (choose_custom_title) BEGIN
+          LAF a7#select_kit_title_interactive
+            STR_VAR
+              title = EVAL ~%new_title%~
+              iconv_path
+              prompt_custom_title
+              prompt_custom_title_confirm
+              msg_current_kit_title
+              msg_custom_title_confirm_help
+              msg_custom_title_invalid
+            RET
+              new_title = title
+          END
+        END
+      END
+    END
+  END
+END
+
+
+/**
+ * Resolves a potential tra reference.
+ *
+ * STR_VAR string   String with tra reference.
+ * RET string       The resolved tra reference. No change if the input string doesn't define a tra reference.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#resolve_tra_reference
+STR_VAR
+  string = ~~
+RET
+  string
+BEGIN
+  OUTER_PATCH_SAVE string ~%string%~ BEGIN
+    REPLACE_EVALUATE ~^@\(-?[0-9]+\)$~ BEGIN
+      PATCH_IF (IS_AN_INT ~MATCH1~) BEGIN
+        SPRINT MATCH0 (AT ~MATCH1~)
+      END
+    END ~%MATCH0%~
+  END
+END
+
+
+/**
+ * Performs variable replacements in the given string.
+ * All well-formed placeholder definitions are replaced by their currently defined variable content.
+ * Format: <place_holder> where "place_holder" may contain any characters of [0-9A-Za-z_].
+ * Literal tokens should escape angle brackets with a backslash character.
+ *
+ * STR_VAR string   String with placeholders.
+ * RET string       The resolved string. No change if the input string doesn't contain placeholders.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#resolve_string
+STR_VAR
+  string = ~~
+RET
+  string
+BEGIN
+  OUTER_SPRINT percent ~%~
+  OUTER_PATCH_SAVE string ~%string%~ BEGIN
+    REPLACE_TEXTUALLY ~\(^\|[^\\]\)<\([0-9A-Za-z_]+\)>~ ~\1%percent%\2%percent%~
+    // second pass needed to catch overlapping matches
+    REPLACE_TEXTUALLY ~\([^\\]\)<\([0-9A-Za-z_]+\)>~ ~\1%percent%\2%percent%~
+    // normalize escaped token expressions
+    REPLACE_TEXTUALLY ~\\\(<[0-9A-Za-z_]+>\)~ ~\1~
+    EVAL
+  END
+END
+
+
+/**
+ * Checks the given input for invalid characters.
+ * Valid characters include all ASCII characters in the code range 0x20 - 0x7f
+ *
+ * INT_VAR replacement  ASCII code of the replacement character for non-ASCII characters. (Default: 32 / space)
+ * STR_VAR input        The input string to check.
+ * STR_VAR iconv_path   Optional path to an iconv binary for Windows. (Default: empty)
+ * RET valid            Returns 1 if the string passes the check, 0 otherwise.
+ * RET index            Returns the character index of the first invalid character if the check doesn't pass successfully.
+ * RET output           Returns the input string converted to UTF-8 encoding if "valid" is 1. Otherwise, returns the
+ *                      input string with incompatible characters being replaced by the "replacement" character.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#evaluate_input
+INT_VAR
+  replacement = 0x20
+  convert = 1
+STR_VAR
+  input = ~~
+  iconv_path = ~~
+RET
+  valid
+  index
+  output
+BEGIN
+  OUTER_SET valid = 1
+  OUTER_SET index = "-1"
+  OUTER_SPRINT output ~%input%~
+
+  ACTION_IF (NOT ~%input%~ STR_EQ ~~) BEGIN
+    // checking if output is valid
+    LAF a7#is_ascii STR_VAR input RET valid = result END
+
+    ACTION_IF (NOT valid) BEGIN
+      ACTION_IF (convert) BEGIN
+        // performing charset conversion
+        ACTION_IF (~%WEIDU_OS%~ STR_EQ ~win32~) BEGIN
+          LAF a7#text_convert_windows STR_VAR input iconv_path RET output END
+        END ELSE BEGIN
+          LAF a7#text_convert_unix STR_VAR input RET output END
+        END
+        OUTER_SET valid = NOT ~%output%~ STR_EQ ~~
+      END
+    END
+
+    ACTION_IF (NOT valid) BEGIN
+      // falling back to replacing problematic characters
+      OUTER_SET replacement = (replacement >= 0x20 && replacement < 0x80) ? replacement : 0x20
+      OUTER_PATCH_SAVE output ~%input%~ BEGIN
+        FOR (pos = 0; pos < len; ++pos) BEGIN
+          READ_BYTE pos value
+          PATCH_IF (value < 0x20 || value >= 0x80) BEGIN
+            // value is outside of printable ASCII code range
+            SET index = (index < 0) ? pos : index
+            WRITE_BYTE pos replacement
+          END
+        END
+      END
+    END
+  END
+END
+
+
+/**
+ * Checks if the given input string is encoded purely in ASCII.
+ *
+ * STR_VAR input  The input string to check.
+ * RET result     Returns 1 if the string contains only ASCII characters, 0 otherwise.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#is_ascii
+STR_VAR
+  input = ~~
+RET
+  result
+BEGIN
+  OUTER_SET result = 1
+  OUTER_SET len = STRING_LENGTH ~%input%~
+  OUTER_PATCH ~%input%~ BEGIN
+    FOR (pos = 0; result && pos < len; ++pos) BEGIN
+      READ_BYTE pos value
+      SET result = ((value >= 0x20 && value < 0x7f) || value == 0x09)
+    END
+  END
+END
+
+
+/**
+ * Performs iconv conversion to UTF-8 character encoding on the given input string on Windows platforms.
+ *
+ * STR_VAR input        The input string to convert.
+ * STR_VAR iconv_path   Optional path to an iconv binary for Windows. (Default: empty)
+ * RET output           The converted string on success, empty string on failure.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#text_convert_windows
+STR_VAR
+  input = ~~
+  iconv_path = ~~
+RET
+  output
+BEGIN
+// Batch file for text conversion (text in angle brackets is replaced by dynamic content)
+<<<<<<<< .../inlined/custom_class_interactive/convert_text.bat
+@echo off
+for /f "tokens=2 delims=:" %%A in ('chcp') do set codepage=%%A
+set codepage=%codepage: =%
+
+if %codepage% equ 65001 (
+  copy /y "<input_file>" "<output_file>" >nul
+  exit /b
+)
+
+if [<iconv_path>] == [] (
+  where iconv.exe >nul 2>nul
+  if errorlevel 1 (
+    exit /b 1
+  )
+  set iconv_bin=iconv.exe
+) else (
+  if exist "<iconv_path>" (
+    set iconv_bin=<iconv_path>
+  ) else (
+    where iconv.exe >nul 2>nul
+    if errorlevel 1 (
+      exit /b 1
+    )
+    set iconv_bin=iconv.exe
+  )
+)
+
+"%iconv_bin%" -f CP%codepage% -t UTF-8 "<input_file>" > "<output_file>"
+>>>>>>>>
+
+  OUTER_SPRINT output ~~
+  ACTION_IF (~%WEIDU_OS%~ STR_EQ ~win32~) BEGIN
+    SILENT
+    // normalizing iconv path
+    OUTER_SET iconv_path_len = STRING_LENGTH ~%iconv_path%~
+    ACTION_IF (iconv_path_len > 0) BEGIN
+      ACTION_IF (NOT FILE_EXISTS ~%iconv_path%~) BEGIN 
+        ACTION_IF (FILE_EXISTS ~%iconv_path%/iconv.exe~) BEGIN
+          OUTER_SPRINT iconv_path ~%iconv_path%/iconv.exe~
+        END ELSE ACTION_IF (FILE_EXISTS ~%iconv_path%/iconv/iconv.exe~) BEGIN
+          OUTER_SPRINT iconv_path ~%iconv_path%/iconv/iconv.exe~
+        END ELSE ACTION_IF (FILE_EXISTS ~%iconv_path%/iconv/win32/iconv.exe~) BEGIN
+          OUTER_SPRINT iconv_path ~%iconv_path%/iconv/win32/iconv.exe~
+        END ELSE BEGIN
+          OUTER_SPRINT iconv_path ~~
+        END
+      END
+    END
+
+    OUTER_SET iconv_path_len = STRING_LENGTH ~%iconv_path%~
+    ACTION_IF (iconv_path_len > 0) BEGIN
+      OUTER_PATCH_SAVE iconv_path ~%iconv_path%~ BEGIN
+        REPLACE_TEXTUALLY ~/~ ~\\~
+        PATCH_IF (0x5c == BYTE_AT (iconv_path_len - 1)) BEGIN
+          DELETE_BYTES (iconv_path_len - 1) 1
+          SET iconv_path_len -= 1
+        END
+        PATCH_IF (0x5c != BYTE_AT 0) BEGIN
+          INSERT_BYTES 0 1
+          WRITE_BYTE 0 0x5c // character '\'
+        END
+      END
+
+      OUTER_SPRINT relativize ~..\..\..\..~
+      OUTER_SPRINT iconv_path ~%relativize%%iconv_path%~
+    END
+
+    // preparing workspace
+    OUTER_SPRINT input_file ~input.txt~
+    OUTER_SPRINT output_file ~output.txt~
+    OUTER_SPRINT workspace ~%WORK_FOLDER%\workspace\%MOD_FOLDER%\%COMPONENT_NUMBER%~
+    MKDIR ~%workspace%~
+
+    // installing batch script
+    COPY + ~.../inlined/custom_class_interactive/convert_text.bat~ ~%workspace%/convert_text.bat~
+      // variable replacement: <var> => var
+      PATCH_FOR_EACH var IN ~iconv_path~ ~input_file~ ~output_file~ BEGIN
+        SPRINT value EVAL ~%%var%%~
+        REPLACE_TEXTUALLY ~<%var%>~ ~%value%~
+      END
+
+    // installing input text file
+    COPY + ~.../inlined/custom_class_interactive/blank~ ~%workspace%/%input_file%~
+      SET len = STRING_LENGTH ~%input%~
+      INSERT_BYTES 0 len
+      WRITE_ASCIIE 0 ~%input%~ (len)
+
+    // performing charset conversion
+    AT_NOW code ~cd /d "%workspace%" && convert_text.bat~ EXACT
+
+    // retrieving converted result
+    OUTER_SPRINT output_path ~%workspace%/%output_file%~
+    ACTION_IF (code == 0 && FILE_EXISTS ~%output_path%~) BEGIN
+      // retrieving converted text
+      COPY + ~%output_path%~ ~%output_path%~
+        READ_ASCII 0 string (SOURCE_SIZE)
+        LPF a7#trim STR_VAR string RET output = string END
+      BUT_ONLY
+    END
+
+    // cleaning up workspace
+    ACTION_FOR_EACH file IN ~%input_file%~ ~%output_file%~ ~convert_text.bat~ BEGIN
+      OUTER_SPRINT path ~%workspace%/%file%~
+      ACTION_IF (FILE_EXISTS ~%path%~) BEGIN
+        DELETE + ~%path%~
+      END
+    END
+    VERBOSE
+  END
+END
+
+
+/**
+ * Performs iconv conversion to UTF-8 character encoding on the given input string on Linux and macOS platforms.
+ * This function expects the "iconv" binary to be installed on the system.
+ *
+ * STR_VAR input        The input string to convert.
+ * RET output           The converted string on success, empty string on failure.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#text_convert_unix
+STR_VAR
+  input = ~~
+RET
+  output
+BEGIN
+// Shell script for text conversion (text in angle brackets is replaced by dynamic content)
+<<<<<<<< .../inlined/custom_class_interactive/convert_text.sh
+#!/bin/sh
+codepage=$(locale charmap)
+
+if [ "$codepage" = "UTF-8" ] || [ "$codepage" = "utf-8" ]; then
+  cp -f "<input_file>" "<output_file>"
+  exit 0
+fi
+
+if ! which iconv >/dev/null 2>&1; then
+  exit 1
+fi
+
+iconv -f $codepage -t UTF-8 "<input_file>" > "<output_file>"
+>>>>>>>>
+
+  OUTER_SPRINT output ~~
+  ACTION_IF (NOT ~%WEIDU_OS%~ STR_EQ ~win32~) BEGIN
+    SILENT
+    // preparing workspace
+    OUTER_SPRINT input_file ~input.txt~
+    OUTER_SPRINT output_file ~output.txt~
+    OUTER_SPRINT workspace ~%WORK_FOLDER%/workspace/%MOD_FOLDER%/%COMPONENT_NUMBER%~
+    MKDIR ~%workspace%~
+
+    // installing shell script
+    COPY + ~.../inlined/custom_class_interactive/convert_text.sh~ ~%workspace%/convert_text.sh~
+      // variable replacement: <var> => var
+      PATCH_FOR_EACH var IN ~input_file~ ~output_file~ BEGIN
+        SPRINT value EVAL ~%%var%%~
+        REPLACE_TEXTUALLY ~<%var%>~ ~%value%~
+      END
+      // remove CR characters
+      REPLACE_TEXTUALLY ~%MNL%~ ~~
+
+    // installing input text file
+    COPY + ~.../inlined/custom_class_interactive/blank~ ~%workspace%/%input_file%~
+      SET len = STRING_LENGTH ~%input%~
+      INSERT_BYTES 0 len
+      WRITE_ASCIIE 0 ~%input%~ (len)
+
+    // performing charset conversion
+    AT_NOW code ~cd "%workspace%" && chmod +x convert_text.sh && ./convert_text.sh~
+
+    // retrieving converted result
+    OUTER_SPRINT output_path ~%workspace%/%output_file%~
+    ACTION_IF (code == 0 && FILE_EXISTS ~%output_path%~) BEGIN
+      // retrieving converted text
+      COPY + ~%output_path%~ ~%output_path%~
+        READ_ASCII 0 string (SOURCE_SIZE)
+        LPF a7#trim STR_VAR string RET output = string END
+      BUT_ONLY
+    END
+
+    // cleaning up workspace
+    ACTION_FOR_EACH file IN ~%input_file%~ ~%output_file%~ ~convert_text.sh~ BEGIN
+      OUTER_SPRINT path ~%workspace%/%file%~
+      ACTION_IF (FILE_EXISTS ~%path%~) BEGIN
+        DELETE + ~%path%~
+      END
+    END
+    VERBOSE
+  END
+END
+
+
+/**
+ * Removes whitespace before and/or after the given string.
+ *
+ * INT_VAR trim_before    Whether to remove whitespace at the beginning of the string.
+ * INT_VAR trim_after     Whether to remove whitespace at the end of the string.
+ * STR_VAR string         The string to trim.
+ * RET string             The trimmed string.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#trim
+INT_VAR
+  trim_before = 1
+  trim_after = 1
+STR_VAR
+  string = ~~
+RET
+  string
+BEGIN
+  ACTION_IF (trim_before || trim_after) BEGIN
+    OUTER_PATCH_SAVE string ~%string%~ BEGIN
+      PATCH_IF (trim_before) BEGIN REPLACE_TEXTUALLY ~^[ %TAB%]+~ ~~ END
+      PATCH_IF (trim_after) BEGIN REPLACE_TEXTUALLY ~[ %TAB%]+$~ ~~ END
+    END
+  END
+END

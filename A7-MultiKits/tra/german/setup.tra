@@ -1,0 +1,50 @@
+@1 = ~Alle Kitkombinationen~
+@2 = ~Manuell auswaehlen~
+
+@10 = ~Mehrklassige Kits fuer Kaempfer/Magier~
+@20 = ~Mehrklassige Kits fuer Kaempfer/Kleriker~
+@30 = ~Mehrklassige Kits fuer Kaempfer/Dieb~
+@40 = ~Mehrklassige Kits fuer Kaempfer/Magier/Dieb~
+@50 = ~Mehrklassige Kits fuer Magier/Dieb~
+@60 = ~Mehrklassige Kits fuer Kleriker/Magier~
+@70 = ~Mehrklassige Kits fuer Kleriker/Dieb~
+@80 = ~Mehrklassige Kits fuer Kaempfer/Druide~
+@90 = ~Mehrklassige Kits fuer Kaempfer/Magier/Kleriker~
+@100 = ~Mehrklassige Kits fuer Kleriker/Waldlaeufer~
+
+@1000 = ~Enhanced-Edition-Spiel wird benoetigt.~
+@1001 = ~DLC Merger wird benoetigt, bevor in diesem Spiel Mods installiert werden koennen. Links und weitere Informationen werden in der Readme aufgefuehrt.~
+
+// Interactive class selection
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@2000 = ~WARNUNG: Ungueltiger Klassenbezeichner angegeben: <class>~
+@2001 = ~Keine Klassen gefunden, die den angegebenen Parametern entsprechen.~
+@2002 = ~Kitinformationen werden ermittelt. Das kann eine Weile dauern...~
+@2003 = ~Verfuegbare Kits fuer <class_title>:~
+@2004 = ~Bitte Nummer des Kits eingeben (leere Eingabe, um mit der Installation fortzusetzen):~
+@2005 = ~Eingegebene Kitnummer existiert nicht. Bitte eine Nummer zwischen <kit_index_first> und <kit_index_last> eingeben, um ein Kit auszuwaehlen oder leere Eingabe, um die Installation fortzusetzen.~
+@2006 = ~<option>) <kit_selected><kit_title>~
+@2007 = ~<option>) <kit_selected><new_kit_title> (Originaltitel: <kit_title>)~
+@2008 = ~ausgewaehlt~
+@2009 = ~Anzahl der zu installierenden Kits: <num_selected>~
+@2010 = ~Installation fortsetzen ([Y]Ja, [N]ein, [C]Abbruch)?~
+@2011 = ~Bitte Y zum Fortsetzen, N zur Rueckkehr zum Auswahlbildschirm oder C zum Abbruch der gesamten Operation eingeben.~
+@2012 = ~Es wurden keine Kits ausgewaehlt. Installation abbrechen ([Y]Ja, [N]ein)?~
+@2013 = ~Bitte Y zum Abbruch der installation oder N zur Rueckkehr zum Auswahlbildschirm eingeben.~
+@2014 = ~Kit "<kit_title>" deselektieren ([Y]Ja, [N]ein)?~
+@2015 = ~Bitte Y zum deselektieren des ausgewaehlten Kits oder N zum Beibehalten der Auswahl eingeben.~
+@2016 = ~Aktueller Titel des mehrklassigen Kits: <kit_title>~
+@2017 = ~Bitte neuen Titel des ausgewaehlten Kits eingeben (leere Eingabe fuer aktuellen Titel):~
+@2018 = ~Neuen Titel "<new_kit_title>" anwenden([A]nwenden, Wiede[R]holen, Abbre[C]hen)?~
+@2019 = ~Bitte A zum Anwenden des neuen Titels, R zur wiederholten Eingabe oder C zum Beibehalten des alten Titels eingeben.~
+@2020 = ~Nicht-ASCII-Zeichen sind nicht zulaessig.~
+
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@3000 = ~Installiere <num_kits> Kits fuer Klasse <class_title>...~
+@3001 = ~Kit erfolgreich installiert: <kit_title>~
+@3002 = ~WARNUNG: Kit konnte nicht installiert werden: <kit_title>~
+@3003 = ~Es wurden <kit_count> Kits fuer Klasse <class_title> erfolgreich installiert.~
+@3004 = ~Keine Kits fuer Klasse <class_title> verfuegbar.~
+@3005 = ~WARNUNG: Keine Kits fuer die angegebene Mehrklassenkombination verfuegbar.~
+@3006 = ~Klasse wird nicht unterstuetzt: <class_label>~
+@3007 = ~Installation wurde abgebrochen.~
