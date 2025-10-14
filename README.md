@@ -5,7 +5,7 @@
 [![Language](https://img.shields.io/static/v1?label=language&message=English%20%7C%20German&color=limegreen)](https://github.com/Argent77/A7-MultiKits)
 
 # Multiclass Kits
-*A mod for BG:EE, SoD, BG2:EE, EET, and IWD:EE that installs any kind of true multiclass kit combinations based on single-class kits.*
+*A mod for BG:EE, SoD, BG2:EE, EET, and IWD:EE that installs all kinds of true multiclass kit combinations based on single-class kits.*
 
 <!--
 [![Beamdog Forums](https://img.shields.io/static/v1?label=Discussion&message=Beamdog%20Forums&color=444&labelColor=eee&style=for-the-badge)](https://forums.beamdog.com/ "Beamdog Forums")
