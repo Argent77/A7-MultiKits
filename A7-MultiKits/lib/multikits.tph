@@ -73,6 +73,7 @@ BEGIN
   OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT class_label ~class~ class END
   ACTION_MATCH class WITH
     7 8 9 10 13 14 15 16 17 18 BEGIN  // all available multi-classes
+      PRINT @2002 // Gathering kit information. This may take a while...
       ACTION_DEFINE_ARRAY class_whitelist BEGIN ~%class_label%~ END
       LAF a7#collect_class_info
         INT_VAR
