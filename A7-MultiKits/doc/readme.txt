@@ -1,11 +1,12 @@
 Multiclass Kits
 ~~~~~~~~~~~~~~~
 
-Version:    0.9-wip
+Version:    1.0
 Author:     Argent77
 
 Download:   https://github.com/Argent77/A7-MultiKits/releases/latest
-Discussion: https://
+Discussion: https://www.gibberlings3.net/forums/topic/40601-mod-multiclass-kits
+            https://forums.beamdog.com/discussion/89800/mod-multiclass-kits
 
 
 Overview

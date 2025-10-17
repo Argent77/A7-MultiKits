@@ -7,11 +7,9 @@
 # Multiclass Kits
 *A mod for BG:EE, SoD, BG2:EE, EET, and IWD:EE that installs all kinds of true multiclass kit combinations based on single-class kits.*
 
-<!--
-[![Beamdog Forums](https://img.shields.io/static/v1?label=Discussion&message=Beamdog%20Forums&color=444&labelColor=eee&style=for-the-badge)](https://forums.beamdog.com/ "Beamdog Forums")
+[![Beamdog Forums](https://img.shields.io/static/v1?label=Discussion&message=Beamdog%20Forums&color=444&labelColor=eee&style=for-the-badge)](https://forums.beamdog.com/discussion/89800/mod-multiclass-kits "Beamdog Forums")
 &nbsp;&nbsp;
-[![G3 Forums](https://img.shields.io/static/v1?label=Discussion&message=G3%20Forums&color=3b45a3&labelColor=eee&style=for-the-badge)](https://www.gibberlings3.net/forums/ "The Gibberlings Three Forums")
--->
+[![G3 Forums](https://img.shields.io/static/v1?label=Discussion&message=G3%20Forums&color=3b45a3&labelColor=eee&style=for-the-badge)](https://www.gibberlings3.net/forums/topic/40601-mod-multiclass-kits "The Gibberlings Three Forums")
 
 ## Overview
 
