@@ -90,6 +90,8 @@ Credits
 
 Coding and testing: Argent77
 
+French translation: deratiseur
+
 
 Copyright Notices
 ~~~~~~~~~~~~~~~~~
@@ -100,6 +102,12 @@ The mod "Multiclass Kits" is licensed under the "Creative Commons Attribution-No
 
 Version History
 ~~~~~~~~~~~~~~~
+
+1.1
+- Added French translation (thanks deratiseur)
+- Added mod order information to readme
+- Fixed issues with the calculation of available weapon proficiencies
+- Lifted the 24-HLA-options limit; not needed anymore for EE games since patch 2.0
 
 1.0
 - Initial release

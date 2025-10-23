@@ -1,0 +1,50 @@
+@1 = ~Toutes les combinaisons de kits~
+@2 = ~Choisir manuellement~
+
+@10 = ~Kits multiclases pour Guerrier/Mage~
+@20 = ~Kits multiclases pour Guerrier/Clerc~
+@30 = ~Kits multiclases pour Guerrier/Voleur~
+@40 = ~Kits multiclases pour Guerrier/Mage/Voleur~
+@50 = ~Kits multiclases pour Mage/Voleur~
+@60 = ~Kits multiclases pour Clerc/Mage~
+@70 = ~Kits multiclases pour Clerc/Voleur~
+@80 = ~Kits multiclases pour Guerrier/Druid~
+@90 = ~Kits multiclases pour Guerrier/Mage/Clerc~
+@100 = ~Kits multiclases pour Clerc/Ranger~
+
+@1000 = ~Le jeu en edition amelioree est requis.~
+@1001 = ~DLC Merger est necessaire avant de pouvoir installer des mods sur ce jeu. Consultez le fichier Lisez-moi pour plus d'informations et pour obtenir le lien de telechargement de DLC Merger.~
+
+// Interactive class selection
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@2000 = ~AVERTISSEMENT : identifiant de classe specifiee invalide : <class>~
+@2001 = ~Aucune classe correspondant aux parametres indiques n'a ete trouvee.~
+@2002 = ~Rassemblement des informations sur les kits. Cela peut prendre un certain temps...~
+@2003 = ~Kits disponibles pour <class_title> :~
+@2004 = ~Veuillez saisir le numero du kit a selectionner (laissez ce champ vide pour poursuivre l'installation) :~
+@2005 = ~Le numero de kit specifie n'est pas disponible. Veuillez saisir un numero compris entre <kit_index_first> et <kit_index_last> pour selectionner un kit, ou laissez le champ vide pour poursuivre l'installation.~
+@2006 = ~<option>) <kit_selected><kit_title>~
+@2007 = ~<option>) <kit_selected><new_kit_title> (Nom original : <kit_title>)~
+@2008 = ~selectionne~
+@2009 = ~Nombre de kits a installer : <num_selected>~
+@2010 = ~Poursuivre l'installation ([Y]Oui, [N]Non, [C]Annuler) ?~
+@2011 = ~Veuillez saisir Y pour installer les kits selectionnes, N pour revenir a l'ecran de selection ou C pour annuler toute l'operation.~
+@2012 = ~Aucun kit n'a ete selectionne. Annuler l'installation ([Y]Oui, [N]Non) ?~
+@2013 = ~Veuillez saisir Y pour annuler toute l'operation, ou N pour revenir a l'ecran de selection.~
+@2014 = ~Deselectionner le kit "<kit_title>" ([Y]Oui, [N]Non)?~
+@2015 = ~Veuillez saisir Y pour deselectionner le kit actuel, ou N pour conserver le kit actuel selectionne.~
+@2016 = ~Titre actuel du kit multiclasses : <kit_title>~
+@2017 = ~Veuillez saisir un nouveau titre pour le kit selectionne (laissez vide pour conserver le titre actuel) :~
+@2018 = ~Accepter le titre du kit "<new_kit_title>" ([A]ccepter, [R]eessayer, [C]Annuler)?~
+@2019 = ~Veuillez saisir A pour accepter, R pour reessayer ou C pour conserver le titre d'origine.~
+@2020 = ~Les caracteres non ASCII ne sont pas autorises.~
+
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@3000 = ~Installation de <num_kits> kits pour la classe <class_title>...~
+@3001 = ~Kit installe avec succes : <kit_title>~
+@3002 = ~AVERTISSEMENT : Impossible d'installer le kit : <kit_title>~
+@3003 = ~Installation reussie de <kit_count> kits pour la classe <class_title>.~
+@3004 = ~Aucun kit disponible pour la classe <class_title>.~
+@3005 = ~AVERTISSEMENT : Aucun kit disponible pour la multiclasse specifiee.~
+@3006 = ~La classe n'est pas prise en charge : <class_label>~
+@3007 = ~Installation du kit interrompue.~

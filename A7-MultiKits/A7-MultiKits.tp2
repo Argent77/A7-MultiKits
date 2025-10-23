@@ -24,6 +24,10 @@ LANGUAGE ~Deutsch~
          ~german~
          ~A7-MultiKits/tra/english/setup.tra~
          ~A7-MultiKits/tra/german/setup.tra~
+LANGUAGE ~Francais~
+         ~french~
+         ~A7-MultiKits/tra/english/setup.tra~
+         ~A7-MultiKits/tra/french/setup.tra~
 
 
 //////////////////////////////////////
