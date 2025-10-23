@@ -38,7 +38,8 @@ Installation Order & Mod Compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The number of installed multiclass kits will most likely exceed the game's hardcoded limit of available kits.
-For that reason it is strongly recommended to install this mod after all other mods that may install new kits.
+For that reason it is strongly recommended to install this mod after all other mods that may install new kits, except
+Talents of Faerûn.
 Since true multiclass kits don't count against the hardcoded limit of the game engine it won't cause any further issues
 in that regard.
 
