@@ -1,6 +1,6 @@
 BACKUP ~weidu_external/backup/A7-MultiKits~
 AUTHOR ~Argent77~
-VERSION ~1.0~
+VERSION ~1.1~
 
 ALWAYS
   // root folder for mutable data
