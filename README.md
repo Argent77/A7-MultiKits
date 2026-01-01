@@ -42,3 +42,7 @@ This option installs all compatible multiclass kit combinations based on existin
 ### Choose manually
 
 This option provides an interactive menu that allows to install one or more multiclass kit combinations. Selected kits can be named individually by the user.
+
+### User-defined multiclass kits (via A7-MultiKits.ini)
+
+With this component it is possible to automate the installation of one or more user-defined multiclass kit combinations. Kit definitions can be defined in the "A7-MultiKits.ini" file found in the mod folder. The component is skipped if no user-defined kit definitions are found.
