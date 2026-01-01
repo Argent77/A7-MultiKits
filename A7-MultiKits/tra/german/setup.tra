@@ -12,8 +12,16 @@
 @90 = ~Mehrklassige Kits fuer Kaempfer/Magier/Kleriker~
 @100 = ~Mehrklassige Kits fuer Kleriker/Waldlaeufer~
 
+@200 = ~Benutzerdefinierte mehrklassige Kits (via A7-MultiKits.ini)~
+
+@900 = ~Interaktive Kitinstallation~
+@901 = ~Benutzerdefinierte Kitinstallation~
+
 @1000 = ~Enhanced-Edition-Spiel wird benoetigt.~
 @1001 = ~DLC Merger wird benoetigt, bevor in diesem Spiel Mods installiert werden koennen. Links und weitere Informationen werden in der Readme aufgefuehrt.~
+@1002 = ~Keine benutzerdefinierten Kits verfuegbar.~
+@1003 = ~Es wurden keine benutzerdefinierten Kits installiert.~
+@1004 = ~Anzahl der installierten mehrklassigen Kits:~
 
 // Interactive class selection
 // Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
@@ -48,6 +56,14 @@
 @3005 = ~WARNUNG: Keine Kits fuer die angegebene Mehrklassenkombination verfuegbar.~
 @3006 = ~Klasse wird nicht unterstuetzt: <class_label>~
 @3007 = ~Installation wurde abgebrochen.~
+
+@3100 = ~Installiere Kit #<kit_index>...~
+@3101 = ~WARNUNG: Keine gueltige Mehrklassenkombination:: <mc_class>~
+@3102 = ~WARNUNG: Kit gehoert zu keiner der Elternklassen: <kit>~
+@3103 = ~WARNUNG: Ungueltiger Kitname: <kit_name>. Automatisch erzeugter Name wird benutzt: <auto_kit_name>~
+@3104 = ~Kit #<kit_index> wurde erfolgreich installiert.~
+@3105 = ~WARNUNG: Kit #<kit_index> konnte nicht installiert werden.~
+@3106 = ~WARNUNG: Kein gueltiges Kit: <kit>~
 
 // WeiDU prompts
 @-1000= "Die %TP2_FILE_NAME%-Mod besitzt"
