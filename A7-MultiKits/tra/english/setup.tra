@@ -35,7 +35,7 @@
 @2007 = ~<option>) <kit_selected><new_kit_title> (Original title: <kit_title>)~
 @2008 = ~selected~
 @2009 = ~Number of kits to install: <num_selected>~
-@2010 = ~Proceeed with the installation ([Y]es, [N]o, [C]ancel)?~
+@2010 = ~Proceed with the installation ([Y]es, [N]o, [C]ancel)?~
 @2011 = ~Please enter Y to install the selected kits, N to return to the selection screen, or C to cancel the whole operation.~
 @2012 = ~No kits were selected. Cancel the installation ([Y]es, [N]o)?~
 @2013 = ~Please enter Y to cancel the whole operation, or N to return to the selection screen.~
