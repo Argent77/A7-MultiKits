@@ -1,4 +1,5 @@
 INCLUDE ~%MOD_FOLDER%/lib/custom_class_interactive.tph~
+INCLUDE ~%MOD_FOLDER%/lib/ini_functions.tph~
 
 // Function Overview:
 // a7#list_multikits                  Diagnostic function that lists available kit combinations for the specified multiclass.
@@ -178,6 +179,9 @@ BEGIN
       END
 
       ACTION_IF (success == 1) BEGIN
+        // saving kit selection in ini file
+        LAF a7#ini_update END
+
         // perform kit installation
         OUTER_SPRINT class_title $class_map_selected(~0~ ~title~)
         OUTER_SET num_kits = $class_map_selected(~0~ ~kit~)

@@ -84,6 +84,10 @@ available single-class kits.
 This option provides an interactive menu that allows to install one or more multiclass kit combinations. Selected kits
 can be named individually by the user.
 
+Note:
+Manual selections made by the user are also stored in the "A7-MultiKits-manual.ini" file that can be found in the
+"A7-MultiKits" folder, so that they can be quickly reinstalled by the automated kit installation method explained below.
+
 
 B) User-defined multiclass kits (via A7-MultiKits.ini)
 

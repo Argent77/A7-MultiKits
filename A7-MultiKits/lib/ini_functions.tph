@@ -1,0 +1,215 @@
+// Default name of the ini file for caching manual kit selections
+OUTER_SPRINT custom_ini_file ~A7-MultiKits-manual.ini~
+
+// Lines added to the ini file by default
+ACTION_DEFINE_ARRAY ini_template BEGIN
+  ~[A7-MultiKits]~
+  ~# Automatically generated from manual multiclass kit selections.~
+  ~# Rename file to "A7-MultiKits.ini" to use it.~
+END
+
+// Empty file for general use
+<<<<<<<< .../inlined/ini_functions/blank
+>>>>>>>>
+
+/**
+ * Action function that creates an updated custom ini file with the multiclass kit definitions defined in "ini_array".
+ * The custom ini file is created if needed.
+ *
+ * STR_VAR class_map_selected   Associative array with kit definitions for a specific multiclass combination.
+ *                              See custom_class_interactive.tph > "class_map_selected" structure for more details.
+ * RET ini_file                 Path of the ini file.
+ */
+DEFINE_ACTION_FUNCTION a7#ini_update
+STR_VAR
+  class_map_selected = ~class_map_selected~
+RET
+  ini_file
+BEGIN
+  OUTER_SPRINT ini_file ~%MOD_FOLDER%/%custom_ini_file%~
+  ACTION_IF (NOT FILE_EXISTS ~%ini_file%~) BEGIN
+    COPY + ~.../inlined/ini_functions/blank~ ~%ini_file%~
+      LPF a7#ini_update_data STR_VAR class_map_selected END
+  END ELSE BEGIN
+    COPY + ~%ini_file%~ ~%ini_file%~
+      LPF a7#ini_update_data STR_VAR class_map_selected END
+    BUT_ONLY
+  END
+END
+
+/**
+ * Patch function that updates the content of the current ini file. Unsupported data is discarded.
+ * 
+ * STR_VAR class_map_selected  Associative array with kit definitions for a specific multiclass combination.
+ */
+DEFINE_PATCH_FUNCTION a7#ini_update_data
+STR_VAR
+  class_map_selected = ~class_map_selected~
+BEGIN
+  // OS-specific line break
+  PATCH_IF (~%WEIDU_OS%~ STR_EQ ~win32~) BEGIN
+    SPRINT nl ~%WNL%~
+  END ELSE BEGIN
+    SPRINT nl ~%LNL%~
+  END
+
+  // file size stored for later
+  SET buffer_length = BUFFER_LENGTH
+
+  // current multiclass combination
+  SET class_id = $~%class_map_selected%~(~0~)
+  SPRINT class_label $~%class_map_selected%~(~0~ ~symbol~)
+
+  // retrieving existing kit definitions
+  SET ini = 0 // ini entry array index/count
+  REPLACE_EVALUATE ~^[ %TAB%]*\([0-9]+\)_\(class\|kit1\|kit2\|kit3\|title\|name\)[ %TAB%]*=[ %TAB%]*\([^%WNL%]*\)~ BEGIN
+    // MATCH1: entry index
+    SET index = MATCH1
+    // MATCH2: key name
+    SPRINT key ~%MATCH2%~
+    // MATCH3: value
+    LPF a7#trim STR_VAR string = EVAL ~%MATCH3%~ RET value = string END
+
+    PATCH_IF (VARIABLE_IS_SET $entry_map(~%index%~)) BEGIN
+      SET ini_index = $entry_map(~%index%~)
+    END ELSE BEGIN
+      SET $ini(~%ini%~) = 0
+      SET $entry_map(~%index%~) = ini
+      SET ini_index = ini
+      SET ini += 1
+    END
+
+    PATCH_IF (~%key%~ STR_EQ ~class~) BEGIN
+      LPF a7#ini_get_ids_info STR_VAR value ids = ~class~ RET id label END
+      SET $ini(~%ini_index%~) = (id != class_id)  // 0: entry is skipped; 1: entry is used
+      SPRINT $ini(~%ini_index%~ ~class~) ~%label%~
+    END ELSE PATCH_IF (~%key%~ STR_EQ ~kit1~) BEGIN
+      LPF a7#ini_get_ids_info STR_VAR value ids = ~kit~ RET id label END
+      PATCH_IF (NOT ~%label%~ STR_EQ ~~) BEGIN
+        SPRINT $ini(~%ini_index%~ ~kit1~) ~%label%~
+      END
+    END ELSE PATCH_IF (~%key%~ STR_EQ ~kit2~) BEGIN
+      LPF a7#ini_get_ids_info STR_VAR value ids = ~kit~ RET id label END
+      PATCH_IF (NOT ~%label%~ STR_EQ ~~) BEGIN
+        SPRINT $ini(~%ini_index%~ ~kit2~) ~%label%~
+      END
+    END ELSE PATCH_IF (~%key%~ STR_EQ ~kit3~) BEGIN
+      LPF a7#ini_get_ids_info STR_VAR value ids = ~kit~ RET id label END
+      PATCH_IF (NOT ~%label%~ STR_EQ ~~) BEGIN
+        SPRINT $ini(~%ini_index%~ ~kit3~) ~%label%~
+      END
+    END ELSE PATCH_IF (~%key%~ STR_EQ ~title~) BEGIN
+      SPRINT $ini(~%ini_index%~ ~title~) ~%value%~
+    END ELSE PATCH_IF (~%key%~ STR_EQ ~name~) BEGIN
+      SPRINT $ini(~%ini_index%~ ~name~) ~%value%~
+    END
+  END ~%MATCH0%~
+
+  // appending ini array with new definitions
+  SET num_kits = $~%class_map_selected%~(~0~ ~kit~)
+  FOR (kit_idx = 0; kit_idx < num_kits; ++kit_idx) BEGIN
+    SET $ini(~%ini%~) = 1
+    SPRINT $ini(~%ini%~ ~class~) ~%class_label%~
+    FOR (i = 1; i <= 3; ++i) BEGIN
+      SPRINT key ~kit%i%~
+      PATCH_IF (IS_AN_INT $~%class_map_selected%~(~0~ ~kit~ ~%kit_idx%~ ~%key%~) && $~%class_map_selected%~(~0~ ~kit~ ~%kit_idx%~ ~%key%~) != "-1") BEGIN
+        SET kit_id = $~%class_map_selected%~(~0~ ~kit~ ~%kit_idx%~ ~%key%~)
+        LOOKUP_IDS_SYMBOL_OF_INT kit_label ~kit~ kit_id
+        SPRINT $ini(~%ini%~ ~%key%~) ~%kit_label%~
+      END
+    END
+    SPRINT $ini(~%ini%~ ~title~) $~%class_map_selected%~(~0~ ~kit~ ~%kit_idx%~ ~title~)
+    SPRINT $ini(~%ini%~ ~name~) $~%class_map_selected%~(~0~ ~kit~ ~%kit_idx%~ ~symbol~)
+    SET ini += 1
+  END
+
+  // creating updated kit definitions in "output" array
+  SET output = 0
+  // header
+  PHP_EACH ini_template AS _ => line BEGIN
+    SPRINT $output(~%output%~) ~%line%%nl%~
+    SET output += 1
+  END
+
+  // kit entries
+  SET new_index = 1
+  FOR (ini_index = 0; ini_index < ini; ++ini_index) BEGIN
+    PATCH_IF (IS_AN_INT $ini(~%ini_index%~) && $ini(~%ini_index%~) != 0) BEGIN
+      PATCH_FOR_EACH key IN ~class~ ~kit1~ ~kit2~ ~kit3~ ~title~ ~name~ BEGIN
+        PATCH_IF (VARIABLE_IS_SET $ini(~%ini_index%~ ~%key%~)) BEGIN
+          SPRINT value $ini(~%ini_index%~ ~%key%~)
+          SPRINT $output(~%output%~) ~%new_index%_%key%=%value%%nl%~
+          SET output += 1
+        END
+      END
+      SET new_index += 1
+    END
+  END
+
+  // pi metadata (if available)
+  INNER_ACTION BEGIN
+    COPY ~%MOD_FOLDER%/A7-MultiKits.ini~ ~%MOD_FOLDER%/A7-MultiKits.ini~
+      SET ofs1 = INDEX_BUFFER(~^[ %TAB%]*\[Metadata\]~)
+      PATCH_IF (ofs1 >= 0) BEGIN
+        SPRINT $output(~%output%~) ~%nl%~
+        SET output += 1
+
+        SET ofs2 = INDEX_BUFFER(~\]~ ofs1)
+        SET ofs2 = INDEX_BUFFER(~^[ %TAB%]*\[[^]]+\]~ ofs2)
+        SET ofs2 = (ofs2 < 0) ? BUFFER_LENGTH : ofs2
+        READ_ASCII ofs1 metadata (ofs2 - ofs1)
+        INNER_PATCH_SAVE metadata ~%metadata%~ BEGIN REPLACE_TEXTUALLY ~%MNL%?%LNL%~ ~%nl%~ END
+        SPRINT $output(~%output%~) ~%metadata%~
+        SET output += 1
+      END
+    BUT_ONLY IF_EXISTS
+  END
+
+  // discarding old content
+  DELETE_BYTES 0 buffer_length
+
+  // writing new content
+  SPRINT content ~~
+  FOR (i = 0; i < output; ++i) BEGIN
+    SPRINT line $output(~%i%~)
+    SPRINT content ~%content%%line%~
+  END
+  SET len = STRING_LENGTH ~%content%~
+  INSERT_BYTES 0 len
+  WRITE_ASCIIE 0 ~%content%~ (len)
+END
+
+// Returns id and label of the specified identifier.
+DEFINE_DIMORPHIC_FUNCTION a7#ini_get_ids_info
+STR_VAR
+  value = ~~  // Symbolic or numeric identifier that is listed in %ids%.ids
+  ids = ~~    // IDS resref
+RET
+  id          // the numeric identifier if found, -1 otherwise
+  label       // the symbolic identifier if found, empty string otherwise
+BEGIN
+  OUTER_SET id = "-1"
+  OUTER_SPRINT label ~~
+  ACTION_IF (NOT ~%value%~ STR_EQ ~~ && FILE_EXISTS_IN_GAME ~%ids%.ids~) BEGIN
+    ACTION_IF (IS_AN_INT ~value~) BEGIN
+      OUTER_SET id = value
+      OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT label ~%ids%~ id END
+    END ELSE BEGIN
+      OUTER_SET id = IDS_OF_SYMBOL(~%ids%~ ~%value%~)
+      OUTER_SPRINT label ~%value%~
+    END
+  END
+END
+
+// Removes leading and trailing whitespace from the given string.
+DEFINE_DIMORPHIC_FUNCTION a7#trim
+STR_VAR
+  string = ~~
+RET
+  string
+BEGIN
+  OUTER_PATCH_SAVE string ~%string%~ BEGIN
+    REPLACE_TEXTUALLY ~^[ %TAB%]+~ ~~
+    REPLACE_TEXTUALLY ~[ %TAB%%WNL%]+$~ ~~
+  END
+END
