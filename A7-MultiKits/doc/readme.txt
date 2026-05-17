@@ -143,6 +143,10 @@ The mod "Multiclass Kits" is licensed under the "Creative Commons Attribution-No
 Version History
 ~~~~~~~~~~~~~~~
 
+1.2
+- Added feature to automate installation of user-defined multiclass kits via ini file
+- Choices of manual multiclass kit installations are saved in a custom ini file for use by the automated installation
+
 1.1
 - Added French translation (thanks deratiseur)
 - Added mod order information to readme
