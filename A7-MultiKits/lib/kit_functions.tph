@@ -9,6 +9,7 @@ INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
 // a7#generate_kit_name         Autogenerates the internal kit name for the specified multiclass kit.
 // a7#generate_title            Autogenerates the kit title that is displayed on the record screen and other places of the game for the specified multiclass kit.
 // a7#generate_help             Autogenerates the kit description displayed on the record screen for the specified multiclass kit.
+// a7#normalize_kit_title       Checks the proposed kit title for irregularities and attempts to fix them if possible.
 // a7#get_unusable_flags        Calculates unusability flags based on the specified source kits.
 // a7#combine_table_entry       Creates a combined version of multiple table rows or columns.
 // a7#merge_kit_hlas            Attempts to create a combined class and kit HLA ability table for the current multiclass kit.
@@ -602,6 +603,7 @@ BEGIN
         PATCH_IF (VARIABLE_IS_SET $classes(~%cur_class%~)) BEGIN
           SET strref = $classes(~%cur_class%~)
           GET_STRREF strref name
+          LPF a7#normalize_kit_title STR_VAR title = EVAL ~%name%~ RET name = title END
           PATCH_IF (~%title%~ STR_EQ ~~) BEGIN
             SPRINT title ~%name%~
           END ELSE BEGIN
@@ -699,6 +701,31 @@ BEGIN
       END
     BUT_ONLY
     VERBOSE
+  END
+END
+
+
+/**
+ * Checks the proposed kit title for irregularities and attempts to fix them if possible.
+ *
+ * STR_VAR title  Kit title to check.
+ * RET title      Normalized kit title.
+ */
+DEFINE_DIMORPHIC_FUNCTION a7#normalize_kit_title
+STR_VAR
+  title = ~~
+RET
+  title
+BEGIN
+  OUTER_PATCH_SAVE title ~%title%~ BEGIN
+    // removing leading whitespace and colons
+    REPLACE_TEXTUALLY ~^[ %TAB%%WNL%:]+~ ~~
+    // removing line breaks and anything afterwards
+    REPLACE_TEXTUALLY ~[%WNL%].*~ ~~
+    // removing text after the first colon
+    REPLACE_TEXTUALLY ~:.*~ ~~
+    // removing trailing whitespace
+    REPLACE_TEXTUALLY ~[ %TAB%]+$~ ~~
   END
 END
 
