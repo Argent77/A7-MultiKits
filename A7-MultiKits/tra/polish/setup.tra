@@ -1,0 +1,50 @@
+@1 = ~Wszystkie mozliwe kombinacje~
+@2 = ~Wybiore samodzielnie~
+
+@10 = ~Kombinacje podklas dla: Wojownik/Mag~
+@20 = ~Kombinacje podklas dla: Wojownik/Kaplan~
+@30 = ~Kombinacje podklas dla: Wojownik/Zlodziej~
+@40 = ~Kombinacje podklas dla: Wojownik/Mag/Zlodziej~
+@50 = ~Kombinacje podklas dla: Mag/Zlodziej~
+@60 = ~Kombinacje podklas dla: Kaplan/Mag~
+@70 = ~Kombinacje podklas dla: Kaplan/Zlodziej~
+@80 = ~Kombinacje podklas dla: Wojownik/Druid~
+@90 = ~Kombinacje podklas dla: Wojownik/Mag/Kaplan~
+@100 = ~Kombinacje podklas dla: Kaplan/Lowca~
+
+@1000 = ~Wymaga gry w warsji Enhanced Edition.~
+@1001 = ~DLC Merger jest wymagany do instalacji modow w tej grze. W pliku readme znajduje sie wiecej informacji oraz link do pobrania DLC Merger.~
+
+// Interactive class selection
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@2000 = ~UWAGA: Podano niewlasciwy identyfikator klasy: <class>~
+@2001 = ~Nie mozna znalezc klas odpowiadajacych podanym parametrom.~
+@2002 = ~Pobieranie informacji o podklasach. To moze potrwac...~
+@2003 = ~Kombinacje podklas dostepne dla <class_title>:~
+@2004 = ~Wpisz numer wybranej kombinacji (pozostaw puste pole, by kontynuowac instalacje):~
+@2005 = ~Wybrany numer nie jest dostepny. Wpisz liczbe miedzy <kit_index_first> a <kit_index_last>, by wybrac kombinacje albo pozostaw puste pole, by kontynuowac instalacje.~
+@2006 = ~<option>) <kit_selected><kit_title>~
+@2007 = ~<option>) <kit_selected><new_kit_title> (Oryginalna nazwa: <kit_title>)~
+@2008 = ~wybrano~
+@2009 = ~Liczba kombinacji do zainstalowania: <num_selected>~
+@2010 = ~Kontynuuj instalacje ([Y]Tak, [N]Nie, [C]Anuluj)?~
+@2011 = ~Wybierz Y, aby zainstalowac wybrane kombinacje, N, aby wrocic do ekranu wyboru lub C, by anulowac operacje.~
+@2012 = ~Nie wybrano zadnej kombinacji. Anulowac operacje dla tej klasy ([Y]Tak, [N]Nie)?~
+@2013 = ~Wybierz Y, aby anulowac cala operacje lub N, aby wrocic do ekranu wyboru.~
+@2014 = ~Anuluj wybor kombinacji "<kit_title>" ([Y]Tak, [N]Nie)?~
+@2015 = ~Wybierz Y, aby anulowac wybor obecnej kombinacji lub N, aby ja zachowac.~
+@2016 = ~Obecna nazwa: <kit_title>~
+@2017 = ~Wpisz nowa nazwe dla wybranej kombinacji podklas (lub pozostaw puste pole, by nie zmieniac):~
+@2018 = ~Zatwierdz nazwe "<new_kit_title>" ([A]Akceptuj, [R]Wpisz ponownie, [C]Anuluj)?~
+@2019 = ~Wybierz A, aby zaakceptowac, R, aby wpisac nazwe ponownie lub C, aby zachowac nazwe oryginalna.~
+@2020 = ~Znaki spoza systemu ASCII sa niedozwolone.~
+
+// Translators: Text inside angle brackets are placeholders for dynamic text. Do not modify!
+@3000 = ~Instalowanie <num_kits> kombinacji dla klasy <class_title>...~
+@3001 = ~Zainstalowano kombinacje: <kit_title>~
+@3002 = ~UWAGA: Nie udalo sie zainstalowac kombinacji: <kit_title>~
+@3003 = ~Instalacja <kit_count> kombinacji dla klasy <class_title> zakonczona powodzeniem.~
+@3004 = ~Brak podklas dostepnych dla klasy <class_title>.~
+@3005 = ~UWAGA: Brak podklas dostepnych dla wybranej kombinacji klas.~
+@3006 = ~Niewspierana klasa: <class_label>~
+@3007 = ~Przerwano instalacje podklasy.~

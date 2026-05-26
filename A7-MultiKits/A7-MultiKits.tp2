@@ -28,7 +28,10 @@ LANGUAGE ~Francais~
          ~french~
          ~A7-MultiKits/tra/english/setup.tra~
          ~A7-MultiKits/tra/french/setup.tra~
-
+LANGUAGE ~Polski~
+         ~polish~
+         ~A7-MultiKits/tra/english/setup.tra~
+         ~A7-MultiKits/tra/polish/setup.tra~
 
 //////////////////////////////////////
 // Multiclass kits for Fighter/Mage //
