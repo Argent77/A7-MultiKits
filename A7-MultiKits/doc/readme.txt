@@ -133,6 +133,8 @@ Coding and testing: Argent77
 
 French translation: deratiseur
 
+Polish translation: Aristo
+
 
 Copyright Notices
 ~~~~~~~~~~~~~~~~~

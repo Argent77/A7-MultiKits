@@ -32,6 +32,11 @@ LANGUAGE ~Simplified Chinese~
          ~schinese~
          ~A7-MultiKits/tra/english/setup.tra~
          ~A7-MultiKits/tra/schinese/setup.tra~
+LANGUAGE ~Polski~
+         ~polish~
+         ~A7-MultiKits/tra/english/setup.tra~
+         ~A7-MultiKits/tra/polish/setup.tra~
+
 
 //////////////////////////////////////
 // Multiclass kits for Fighter/Mage //
