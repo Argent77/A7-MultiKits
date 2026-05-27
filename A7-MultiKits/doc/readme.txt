@@ -135,6 +135,8 @@ French translation: deratiseur
 
 Polish translation: Aristo
 
+Simplified Chinese translation: MephistoSatanDevil
+
 
 Copyright Notices
 ~~~~~~~~~~~~~~~~~
@@ -149,6 +151,8 @@ Version History
 1.2
 - Added feature to automate installation of user-defined multiclass kits via ini file
 - Choices of manual multiclass kit installations are saved in a custom ini file for use by the automated installation
+- Added Simplified Chinese translation (thanks MephistoSatanDevil)
+- Added Polish translation (thanks Aristo)
 
 1.1
 - Added French translation (thanks deratiseur)
